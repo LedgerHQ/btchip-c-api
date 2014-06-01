@@ -31,6 +31,14 @@ unsigned char* writeUint32BE(unsigned char *buffer, uint32_t value) {
 	return (buffer + 4);
 }
 
+unsigned char* writeUint32LE(unsigned char *buffer, uint32_t value) {
+	*(buffer + 3) = ((value >> 24) & 0xff);
+	*(buffer + 2) = ((value >> 16) & 0xff);
+	*(buffer + 1) = ((value >> 8) & 0xff);
+	*buffer = (value & 0xff);
+	return (buffer + 4);
+}
+
 bitcoinTransaction* parseTransactionStringWithIndex(char *transactionString, uint32_t *index) {
 	char *rawTransaction;
 	char *accountIndex;

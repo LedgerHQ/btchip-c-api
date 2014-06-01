@@ -47,6 +47,7 @@ typedef struct bitcoinTransaction {
 bitcoinTransaction* parseTransaction(unsigned char *transaction, size_t transactionLength);
 int computeTransactionBufferSize(bitcoinTransaction* transaction);
 size_t writeTransaction(bitcoinTransaction* transaction, unsigned char *buffer, size_t bufferSize);
+size_t writeTransactionWithoutOutputLocktime(bitcoinTransaction* transaction, unsigned char *buffer, size_t bufferSize);
 size_t countTransactionInputs(bitcoinTransaction *transaction);
 size_t countTransactionOutputs(bitcoinTransaction *transaction);
 void debugTransaction(bitcoinTransaction* transaction);

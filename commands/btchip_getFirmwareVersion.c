@@ -10,6 +10,7 @@
 #include "dongleComm.h"
 #include "hexUtils.h"
 #include "btchipApdu.h"
+#include "btchipArgs.h"
 
 int main(int argc, char **argv) {
 	dongleHandle dongle;
@@ -17,18 +18,8 @@ int main(int argc, char **argv) {
 	unsigned char out[260];
 	int result;
 	int sw;
-	int i;
 	int apduSize;	
 
-	if (argc < 2) {
-		fprintf(stderr, "Usage : %s [number of random bytes to get]\n", argv[0]);
-		return 0;
-	}
-	result = atoi(argv[1]);
-	if (result == 0) {
-		fprintf(stderr, "Invalid size\n");
-		return 0;
-	}
 	initDongle();
 	dongle = getFirstDongle();
 	if (dongle == NULL) {
@@ -37,10 +28,10 @@ int main(int argc, char **argv) {
 	}
 	apduSize = 0;
 	in[apduSize++] = BTCHIP_CLA;
-	in[apduSize++] = BTCHIP_INS_GET_RANDOM;
+	in[apduSize++] = BTCHIP_INS_GET_FIRMWARE_VERSION;
 	in[apduSize++] = 0x00;
 	in[apduSize++] = 0x00;
-	in[apduSize++] = result;
+	in[apduSize++] = 0x05;
 	result = sendApduDongle(dongle, in, apduSize, out, sizeof(out), &sw);
 	closeDongle(dongle);
 	exitDongle();
@@ -48,14 +39,22 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "I/O error\n");
 		return 0;
 	}
+	if (sw == SW_UNKNOWN) {
+		// Initial firmware did not support this command
+		out[0] = 0x00;		
+		out[1] = 0x00;		
+		out[2] = 0x01;		
+		out[3] = 0x04;
+		out[4] = 0x03;
+	}
+	else
 	if (sw != SW_OK) {
 		fprintf(stderr, "Dongle application error : %.4x\n", sw);
 		return 0;
 	}
-    	printf("Random : ");
-	for (i=0; i<result; i++) {
-		printf("%.2x", out[i]);
-	}
-	printf("\n");		
+	printf("Firmware version %d.%d.%d\n", ((out[1] << 8) + out[2]), out[3], out[4]);
+	printf("Using compressed keys : %s\n", (out[0] == 0x01 ? "yes" : "no"));
+
 	return 1;
 }
+

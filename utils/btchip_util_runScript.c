@@ -23,47 +23,69 @@
 
 int main(int argc, char **argv) {
 	dongleHandle dongle;
+	char data[520];
 	unsigned char in[260];
 	unsigned char out[260];
 	int result;
 	int sw;
 	int apduSize;	
-	int operationMode;
+	FILE *file;
 
 	if (argc < 2) {
-		fprintf(stderr, "Usage : %s [operation mode (WALLET|RELAXED|SERVER|DEVELOPER)]\n", argv[0]);
+		fprintf(stderr, "Usage : %s [script to run]\n", argv[0]);
 		return 0;
 	}
-	operationMode = convertMode(argv[1]);
-	if (operationMode < 0) {
-		fprintf(stderr, "Invalid operation mode %s\n", argv[1]);
+	file = fopen(argv[1], "r");
+	if (file == NULL) {
+		fprintf(stderr, "Invalid file %s\n", argv[1]);
 		return 0;
 	}
 	initDongle();
 	dongle = getFirstDongle();
 	if (dongle == NULL) {
+		fclose(file);
 		fprintf(stderr, "No dongle found\n");
 		return 0;
 	}
-	apduSize = 0;
-	in[apduSize++] = BTCHIP_CLA;
-	in[apduSize++] = BTCHIP_INS_SET_OPERATION_MODE;
-	in[apduSize++] = 0x00;
-	in[apduSize++] = 0x00;
-	in[apduSize++] = 0x01;
-	in[apduSize++] = operationMode;
-	result = sendApduDongle(dongle, in, apduSize, out, sizeof(out), &sw);
+	for (;;) {
+		int offset = 0;
+		char *apduLine = fgets(data, sizeof(data), file);
+		if (apduLine == NULL) {
+			break;
+		}
+		if ((apduLine[0] == '\0') || (apduLine[0] == '#')) {
+			continue;
+		}
+		apduLine[strlen(apduLine) - 1] = '\0';
+		if (apduLine[strlen(apduLine) - 1] == '\r') {
+			apduLine[strlen(apduLine) - 1] = '\0';
+		}
+		if (apduLine[0] == '!') {
+			offset = 1;
+		}
+		apduSize = hexToBin(apduLine + offset, in, sizeof(in));
+		if (apduSize == 0) {
+			fclose(file);
+			fprintf(stderr, "Invalid APDU %s\n", apduLine);
+			return 0;
+		}
+		result = sendApduDongle(dongle, in, apduSize, out, sizeof(out), &sw);	
+		if (offset == 0) {
+			if (result < 0) {
+				fclose(file);
+				fprintf(stderr, "I/O error\n");
+				return 0;
+			}
+			if (sw != SW_OK) {
+				fclose(file);
+				fprintf(stderr, "Dongle application error : %.4x\n", sw);
+				return 0;
+			}
+		}
+	}
+	fclose(file);
 	closeDongle(dongle);
 	exitDongle();
-	if (result < 0) {
-		fprintf(stderr, "I/O error\n");
-		return 0;
-	}
-	if (sw != SW_OK) {
-		fprintf(stderr, "Dongle application error : %.4x\n", sw);
-		return 0;
-	}
-	printf("New mode set, please powercycle\n");
+	printf("Script executed\n");
 	return 1;
 }
-

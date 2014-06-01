@@ -40,8 +40,8 @@ typedef struct prevout {
 
 int main(int argc, char **argv) {
 	dongleHandle dongle;
-	unsigned char in[255];
-	unsigned char out[255];
+	unsigned char in[260];
+	unsigned char out[260];
 	int result;
 	int sw;
 	int apduSize;		
@@ -54,8 +54,8 @@ int main(int argc, char **argv) {
 	int i;
 
 	initDongle();
-	if (argc < 4) {
-		fprintf(stderr, "Usage : %s [NEW for a new transaction|CONTINUE to keep on signing inputs in a previous transaction] [index of input to sign] [list of transactions outputs to use in this transaction]\n", argv[0]);
+	if (argc < 5) {
+		fprintf(stderr, "Usage : %s [NEW for a new transaction|CONTINUE to keep on signing inputs in a previous transaction] [index of input to sign] [redeem script to use or empty to use the default one] [list of transactions output to use in this transaction]\n", argv[0]);
 		fprintf(stderr, "Transaction outputs are coded as [hex transaction:output index] to generate a trusted input, or [-hex transaction:output index] to use the prevout directly for an output you don't own (relaxed wallet mode)\n");		
 		goto cleanup;
 	}
@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
 		goto cleanup;
 	}
 	signingIndex = result;
-	transactionsNumber = argc - 1 - 2;
+	transactionsNumber = argc - 1 - 3;
 	transactions = (bitcoinTransaction**)malloc(sizeof(bitcoinTransaction*) * transactionsNumber);
 	if (transactions == NULL) {
 		fprintf(stderr, "Couldn't allocate transactions list\n");
@@ -99,8 +99,8 @@ int main(int argc, char **argv) {
 	for (i=0; i<transactionsNumber; i++) {
 		uint32_t index;
 		unsigned char untrusted;
-		untrusted = (argv[3 + i][0] == '-');
-		transactions[i] = parseTransactionStringWithIndex(argv[3 + i] + (untrusted ? 1 : 0), &index);
+		untrusted = (argv[4 + i][0] == '-');
+		transactions[i] = parseTransactionStringWithIndex(argv[4 + i] + (untrusted ? 1 : 0), &index);
 		if (transactions[i] == NULL) {
 			fprintf(stderr, "Invalid transaction %d\n", i + 1);
 			goto cleanup;
@@ -116,6 +116,8 @@ int main(int argc, char **argv) {
 				goto cleanup;
 			}
 			prevouts[i].isTrusted = 1;
+			printf("Trusted input #%d\n", (i + 1));
+			displayBinary(prevouts[i].prevout, result);
 		}
 		prevouts[i].outputIndex = index;
 	}
@@ -142,7 +144,7 @@ int main(int argc, char **argv) {
 	// Each input
 	for (i=0; i<transactionsNumber; i++) {
 		int scriptLength;
-		unsigned char *script;
+		unsigned char *script;			
 		apduSize = 0;
 		in[apduSize++] = BTCHIP_CLA;
 		in[apduSize++] = BTCHIP_INS_HASH_INPUT_START;
@@ -164,13 +166,29 @@ int main(int argc, char **argv) {
 		// Get the script length - use either the output script if signing the current index
 		// Or a null script
 		if (i == signingIndex) {
-			int j;
-			bitcoinOutput *output = transactions[i]->outputs;
-			for (j=0; j<prevouts[i].outputIndex; j++) {
-				output = output->next;
+			if (strlen(argv[3]) != 0) {
+				scriptLength = strlen(argv[3]) / 2;
+				script = (unsigned char*)malloc(scriptLength);
+				if (script == NULL) {
+					fprintf(stderr, "Failed to allocate script\n");
+					goto cleanup;
+				}
+				scriptLength = hexToBin(argv[3], script, scriptLength);
+				if (scriptLength <= 0) {
+					free(script);
+					fprintf(stderr, "Invalid redeem script\n");
+					goto cleanup;
+				}
 			}
-			scriptLength = output->scriptLength;
-			script = output->script;
+			else {
+				int j;
+				bitcoinOutput *output = transactions[i]->outputs;
+				for (j=0; j<prevouts[i].outputIndex; j++) {
+					output = output->next;
+				}
+				scriptLength = output->scriptLength;
+				script = output->script;
+			}
 		}
 		else {
 			scriptLength = 0;
@@ -180,6 +198,9 @@ int main(int argc, char **argv) {
 		if (scriptLength != 0) {
 			memcpy(in + apduSize, script, scriptLength);
 			apduSize += scriptLength;
+		}
+		if (strlen(argv[3]) != 0) {
+			free(script);
 		}
 		memcpy(in + apduSize, DEFAULT_SEQUENCE, sizeof(DEFAULT_SEQUENCE));
 		apduSize += sizeof(DEFAULT_SEQUENCE);

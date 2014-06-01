@@ -16,16 +16,32 @@
 *   limitations under the License.
 ********************************************************************************/
 
-#ifndef __BTCHIP_UTILS_H__
-
-#define __BTCHIP_UTILS_H__
-
-#include <inttypes.h>
-#include "bitcoinTransaction.h"
-
-unsigned char* writeUint32BE(unsigned char *buffer, uint32_t value);
-unsigned char* writeUint32LE(unsigned char *buffer, uint32_t value);
-bitcoinTransaction* parseTransactionStringWithIndex(char *transaction, uint32_t *index);
-
+#include <stdio.h>
+#include <stdlib.h>
+#ifdef EXTRA_DEBUG	
+#include <assert.h>
 #endif
+#include "hexUtils.h"
 
+int main(int argc, char **argv) {
+	unsigned char publicKey[100];
+	int result;
+
+	if (argc < 2) {
+		fprintf(stderr, "Usage : %s [public key]\n", argv[0]);
+		return 0;
+	}
+	result = hexToBin(argv[1], publicKey, sizeof(publicKey));
+	if (result == 0) {
+		fprintf(stderr, "Invalid public key\n");
+		return 0;
+	}
+	if (publicKey[0] != 0x04) {
+		fprintf(stderr, "Invalid public key format\n");
+		return 0;
+	}
+	publicKey[0] = ((publicKey[64] & 1) ? 0x03 : 0x02);
+	printf("Compressed public key : ");
+	displayBinary(publicKey, 33);
+	return 1;
+}

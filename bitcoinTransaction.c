@@ -274,7 +274,7 @@ bitcoinTransaction* parseTransaction(unsigned char *transaction, size_t transact
 	return result;	
 }
 
-size_t writeTransaction(bitcoinTransaction* transaction, unsigned char *buffer, size_t bufferSize) {
+size_t writeTransactionGeneric(bitcoinTransaction* transaction, unsigned char *buffer, size_t bufferSize, unsigned char skipOutputLocktime) {
 	int offset = 0;
 	bitcoinInput *currentInput = transaction->inputs;
 	bitcoinOutput *currentOutput = transaction->outputs;
@@ -295,18 +295,28 @@ size_t writeTransaction(bitcoinTransaction* transaction, unsigned char *buffer, 
 		offset += sizeof(currentInput->sequence);		
 		currentInput = currentInput->next;
 	}
-	offset += writeVarint(countTransactionOutputs(transaction), (buffer + offset), (bufferSize - offset));
-	while(currentOutput != NULL) {
-		memcpy((buffer + offset), currentOutput->amount, sizeof(currentOutput->amount));
-		offset += sizeof(currentOutput->amount);
-		offset += writeVarint(currentOutput->scriptLength, (buffer + offset), (bufferSize - offset));
-		memcpy((buffer + offset), currentOutput->script, currentOutput->scriptLength);
-		offset += currentOutput->scriptLength;
-		currentOutput = currentOutput->next;
+	if (!skipOutputLocktime) {
+		offset += writeVarint(countTransactionOutputs(transaction), (buffer + offset), (bufferSize - offset));
+		while(currentOutput != NULL) {
+			memcpy((buffer + offset), currentOutput->amount, sizeof(currentOutput->amount));
+			offset += sizeof(currentOutput->amount);
+			offset += writeVarint(currentOutput->scriptLength, (buffer + offset), (bufferSize - offset));
+			memcpy((buffer + offset), currentOutput->script, currentOutput->scriptLength);
+			offset += currentOutput->scriptLength;
+			currentOutput = currentOutput->next;
+		}
+		memcpy((buffer + offset), transaction->lockTime, sizeof(transaction->lockTime));
+		offset += sizeof(transaction->lockTime);
 	}
-	memcpy((buffer + offset), transaction->lockTime, sizeof(transaction->lockTime));
-	offset += sizeof(transaction->lockTime);
 	return offset;
+}
+
+size_t writeTransaction(bitcoinTransaction* transaction, unsigned char *buffer, size_t bufferSize) {
+		return writeTransactionGeneric(transaction, buffer, bufferSize, 0);
+}
+
+size_t writeTransactionWithoutOutputLocktime(bitcoinTransaction* transaction, unsigned char *buffer, size_t bufferSize) {
+		return writeTransactionGeneric(transaction, buffer, bufferSize, 1);	
 }
 
 void freeTransaction(bitcoinTransaction* transaction) {

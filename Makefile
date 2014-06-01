@@ -3,7 +3,7 @@ CFLAGS = -Wall -Werror -Os -DEXTRA_DEBUG -DDEBUG_COMM -I.
 OBJS   = hexUtils.o btchipUtils.o bitcoinVarint.o bitcoinTransaction.o bitcoinAmount.o btchipArgs.o
 OBJS_COMM = $(OBJS) dongleCommHid.o dongleCommWinUSB.o dongleComm.o
 
-all: btchip_setup btchip_setup_forward btchip_setup_143 btchip_verifyPin btchip_getWalletPublicKey btchip_getOperationMode btchip_setOperationMode btchip_getTrustedInput btchip_startUntrustedTransaction btchip_finalizeInput btchip_finalizeInputFull btchip_untrustedHashSign btchip_signMessagePrepare btchip_signMessageSign btchip_composeMofNStart btchip_composeMofNContinue btchip_importPrivateKey btchip_getPublicKey btchip_deriveBip32Key btchip_signImmediate btchip_verifyImmediate btchip_getRandom btchip_util_parseRawTransaction
+all: btchip_setup btchip_setup_forward btchip_setup_143 btchip_verifyPin btchip_getWalletPublicKey btchip_getOperationMode btchip_setOperationMode btchip_getTrustedInput btchip_startUntrustedTransaction btchip_finalizeInput btchip_finalizeInputFull btchip_untrustedHashSign btchip_signMessagePrepare btchip_signMessageSign btchip_composeMofNStart btchip_composeMofNContinue btchip_importPrivateKey btchip_getPublicKey btchip_deriveBip32Key btchip_signImmediate btchip_verifyImmediate btchip_getRandom btchip_getFirmwareVersion btchip_util_runScript btchip_util_parseRawTransaction btchip_util_compressPublicKey btchip_util_getRegularInputScript btchip_util_getP2SHRedeemScript btchip_util_getP2SHInputScript btchip_util_formatTransaction
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -o $@ -c $<
@@ -74,8 +74,29 @@ btchip_verifyImmediate: commands/btchip_verifyImmediate.o $(OBJS_COMM)
 btchip_getRandom: commands/btchip_getRandom.o $(OBJS_COMM)
 	gcc commands/btchip_getRandom.o $(OBJS_COMM) -o bin/btchip_getRandom -l hidapi-hidraw -l usb-1.0
 
+btchip_getFirmwareVersion: commands/btchip_getFirmwareVersion.o $(OBJS_COMM)
+	gcc commands/btchip_getFirmwareVersion.o $(OBJS_COMM) -o bin/btchip_getFirmwareVersion -l hidapi-hidraw -l usb-1.0
+
+btchip_util_runScript: utils/btchip_util_runScript.o $(OBJS_COMM)
+	gcc utils/btchip_util_runScript.o $(OBJS_COMM) -o bin/btchip_util_runScript -l hidapi-hidraw -l usb-1.0
+
 btchip_util_parseRawTransaction: utils/btchip_util_parseRawTransaction.o 
 	gcc utils/btchip_util_parseRawTransaction.o $(OBJS) -o bin/btchip_util_parseRawTransaction
+
+btchip_util_compressPublicKey: utils/btchip_util_compressPublicKey.o 
+	gcc utils/btchip_util_compressPublicKey.o $(OBJS) -o bin/btchip_util_compressPublicKey
+
+btchip_util_getRegularInputScript: utils/btchip_util_getRegularInputScript.o 
+	gcc utils/btchip_util_getRegularInputScript.o $(OBJS) -o bin/btchip_util_getRegularInputScript
+
+btchip_util_getP2SHRedeemScript: utils/btchip_util_getP2SHRedeemScript.o 
+	gcc utils/btchip_util_getP2SHRedeemScript.o $(OBJS) -o bin/btchip_util_getP2SHRedeemScript
+
+btchip_util_getP2SHInputScript: utils/btchip_util_getP2SHInputScript.o 
+	gcc utils/btchip_util_getP2SHInputScript.o $(OBJS) -o bin/btchip_util_getP2SHInputScript
+
+btchip_util_formatTransaction: utils/btchip_util_formatTransaction.o 
+	gcc utils/btchip_util_formatTransaction.o $(OBJS) -o bin/btchip_util_formatTransaction
 
 clean:
 	rm -f *.o bin/* commands/*.o utils/*.o

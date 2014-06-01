@@ -32,8 +32,8 @@
 
 int main(int argc, char **argv) {
 	dongleHandle dongle;
-	unsigned char in[255];
-	unsigned char out[255];
+	unsigned char in[260];
+	unsigned char out[260];
 	int result;
 	int sw;
 	int apduSize;		
@@ -127,7 +127,7 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "Dongle application error : %.4x\n", sw);
 		return 0;
 	}	
-	printf("Signature : ");
-	displayBinary(out, out[1] + 2);
+	printf("Signature + hashtype : ");
+	displayBinary(out, result);
 	return 1;
 }

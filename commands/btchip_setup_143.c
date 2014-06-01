@@ -44,8 +44,8 @@ int main(int argc, char **argv) {
 	unsigned char userEntropy[32];
 	unsigned char developerKey[16];
 	int developerKeyLength;
-	unsigned char in[255];
-	unsigned char out[255];
+	unsigned char in[260];
+	unsigned char out[260];
 	int result;
 	int sw;
 	int apduSize;	

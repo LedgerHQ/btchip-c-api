@@ -30,8 +30,8 @@ int main(int argc, char **argv) {
 	int chain;
 	uint32_t account;
 	uint32_t chainIndex;
-	unsigned char in[255];
-	unsigned char out[255];
+	unsigned char in[260];
+	unsigned char out[260];
 	int result;
 	int sw;
 	int apduSize;	

@@ -54,6 +54,8 @@
 #define BTCHIP_INS_ADM_FIRMWARE_UPDATE       0x42
 
 #define SW_OK 0x9000
+#define SW_UNKNOWN 0x6D00
+
 
 #define OFFSET_CDATA 0x04
 

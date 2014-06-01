@@ -27,6 +27,7 @@
 #include "bitcoinAmount.h"
 #include "btchipUtils.h"
 #include "btchipTrustedInput.h"
+#include "btchipArgs.h"
 
 #define PREVOUT_SIZE 36
 
@@ -41,8 +42,8 @@ typedef struct prevout {
 
 int main(int argc, char **argv) {
 	dongleHandle dongle;
-	unsigned char in[255];
-	unsigned char out[255];
+	unsigned char in[260];
+	unsigned char out[260];
 	int result;
 	int sw;
 	int apduSize;		
@@ -51,9 +52,10 @@ int main(int argc, char **argv) {
 	int64_t fees;
 	uint32_t changeAccount;
 	uint32_t changeIndex;
+	int chain;
 
-	if (argc < 6) {
-		fprintf(stderr, "Usage : %s [output address] [amount (in BTC string)] [fees (in BTC string)] [account number for change] [index for change]\n", argv[0]);
+	if (argc < 7) {
+		fprintf(stderr, "Usage : %s [output address] [amount (in BTC string)] [fees (in BTC string)] [chain for change (INTERNAL or EXTERNAL)] [account number for change] [index for change]\n", argv[0]);
 		return 0;
 	}
 	address[sizeof(address) - 1] = '\0';
@@ -66,13 +68,18 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "Invalid fees\n");
 		return 0;
 	}
-	result = strtol(argv[4], NULL, 10);
+	chain = convertChain(argv[4]);
+	if (chain < 0) {
+		fprintf(stderr, "Invalid chain\n");
+		return 0;
+	}
+	result = strtol(argv[5], NULL, 10);
 	if (result < 0) {
 		fprintf(stderr, "Invalid change account number\n");
 		return 0;
 	}
 	changeAccount = result;
-	result = strtol(argv[5], NULL, 10);
+	result = strtol(argv[6], NULL, 10);
 	if (result < 0) {
 		fprintf(stderr, "Invalid change index\n");
 		return 0;
@@ -88,7 +95,7 @@ int main(int argc, char **argv) {
 	in[apduSize++] = BTCHIP_CLA;
 	in[apduSize++] = BTCHIP_INS_HASH_INPUT_FINALIZE;
 	in[apduSize++] = 0x02;
-	in[apduSize++] = 0x00;
+	in[apduSize++] = chain;
 	in[apduSize++] = 0x00;
 	in[apduSize++] = strlen(address);	
 	memcpy(in + apduSize, address, strlen(address));
@@ -113,7 +120,7 @@ int main(int argc, char **argv) {
 		return 0;
 	}	
 	apduSize = 0;
-	printf("Output script : ");
+	printf("Output data : ");
 	displayBinary(out + 1, out[0]);
 	apduSize = 1 + out[0];
 	if (out[apduSize] == 0x00) {

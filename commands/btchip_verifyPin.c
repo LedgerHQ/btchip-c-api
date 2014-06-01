@@ -14,8 +14,8 @@
 int main(int argc, char **argv) {
 	dongleHandle dongle;
 	unsigned char pin[8];
-	unsigned char in[255];
-	unsigned char out[255];
+	unsigned char in[260];
+	unsigned char out[260];
 	int result;
 	int sw;
 	int apduSize;	

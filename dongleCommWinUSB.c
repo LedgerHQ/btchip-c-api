@@ -20,6 +20,7 @@
 
 #define BTCHIP_VID 0x2581
 #define BTCHIP_WINUSB_PID 0x1b7c
+#define BTCHIP_WINUSB_BOOTLOADER_PID 0x1808
 
 #define TIMEOUT 10000
 #define SW1_DATA 0x61
@@ -68,8 +69,12 @@ int sendApduWinUSB(libusb_device_handle *handle, const unsigned char *apdu, size
 libusb_device_handle* getFirstDongleWinUSB() {
 	libusb_device_handle *result = libusb_open_device_with_vid_pid(NULL, BTCHIP_VID, BTCHIP_WINUSB_PID);
 	if (result == NULL) {
-		return NULL;
+		result = libusb_open_device_with_vid_pid(NULL, BTCHIP_VID, BTCHIP_WINUSB_BOOTLOADER_PID);
+		if (result == NULL) {		
+			return NULL;
+		}
 	}
+
 	libusb_claim_interface(result, 0);
 	return result;
 }

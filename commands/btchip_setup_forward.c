@@ -35,8 +35,8 @@ int main(int argc, char **argv) {
 	int userPublicKeyLength;
 	unsigned char passwordBlob[40];
 	unsigned char userEntropy[32];
-	unsigned char in[255];
-	unsigned char out[255];
+	unsigned char in[260];
+	unsigned char out[260];
 	int result;
 	int sw;
 	int apduSize;	

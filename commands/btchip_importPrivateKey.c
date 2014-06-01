@@ -35,8 +35,8 @@
 
 int main(int argc, char **argv) {
 	dongleHandle dongle;
-	unsigned char in[255];
-	unsigned char out[255];
+	unsigned char in[260];
+	unsigned char out[260];
 	unsigned char seed[65];
 	int seedLength;
 	int result;
