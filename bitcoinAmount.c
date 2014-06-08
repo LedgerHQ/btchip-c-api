@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <inttypes.h>
 #include "bitcoinAmount.h"
 
 // Shamelessly borrowed from Bitcoin Core to avoid rounding issues
@@ -123,7 +124,7 @@ void formatAmount(int64_t amount, char *result, size_t length) {
     int64_t quotient = n_abs/COIN;
     int64_t remainder = n_abs%COIN;
     tmp[19] = '\0';
-    snprintf(tmp, sizeof(tmp) - 1, "%lld.%08lld", quotient, remainder);
+    snprintf(tmp, sizeof(tmp) - 1, "%"PRId64".%08"PRId64"", quotient, remainder);
 
     // Right-trim excess zeros before the decimal point:
     int nTrim = 0;
