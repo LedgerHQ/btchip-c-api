@@ -3,10 +3,25 @@ btchip-c-api
 
 C APIs demonstrating how to use the latest BTChip firmware published on http://btchip.github.io/btchip-doc/bitcoin-technical.html
 
-Building
---------
+Building on Linux and OS X
+---------------------------
 
-Build with GNU make (needs libusb 1.0 development APIs and optionally hidapi available on http://www.signal11.us/oss/hidapi/), each command is described below
+Build with GNU make (needs libusb 1.0 development APIs), each command is described below
+
+Building on Windows
+--------------------
+
+  * Download MinGW installer mingw-get from http://sourceforge.net/projects/mingw/files/Installer/ with the following options :
+     * from basic : mingw32-base, msys-base
+     * from all : mingw32-autoconf, mingw32-automake, mingw32-libtool, msys-libtool, msys-gcc
+  * Get libusb from git : git clone git://git.libusb.org/libusb.git
+  * Compile libusb
+     * Start msys
+     * Modify the compile path (update your drive reference, might not be necessary) : export PATH=$PATH:/c/mingw/bin
+     * Run : ./autogen.sh
+     * Run : make install
+  * Build with GNU make
+
 
 High level samples
 ------------------
@@ -17,6 +32,11 @@ The generic transaction is available at https://blockchain.info/tx/3ec2589c853dc
 
 
 ```
+Restore dongle seed
+
+> btchip_setup "WALLET" "RFC6979" "" "" "31323334" "" "QWERTY" "1762F9A3007DBC825D0DD9958B04880284E88F10C57CF569BB3DADF7B1027F2D" "" ""
+
+
 Authenticate
 
 > btchip_verifyPin 31323334
@@ -71,6 +91,10 @@ The P2SH transaction is available at https://blockchain.info/tx/00c20854d077b111
 On the first dongle
 
 ```
+Restore dongle seed
+
+> btchip_setup "WALLET" "RFC6979" "" "" "31323334" "" "QWERTY" "1762F9A3007DBC825D0DD9958B04880284E88F10C57CF569BB3DADF7B1027F2D" "" ""
+
 Authenticate
 
 > btchip_verifyPin 31323334
@@ -90,6 +114,10 @@ Compressed public key : 0348bb1fade0adde1bf202726e6db5eacd2063fce7ecf8bbfd17377f
 On the second dongle
 
 ```
+Restore dongle seed
+
+> btchip_setup "WALLET" "RFC6979" "" "" "31323334" "" "QWERTY" "9C288109F125C1D86DE32FB13FE9AEA77A310FBCAEDBA33BEA6142DB2CA3FADD" "" ""
+
 Authenticate
 
 > btchip_verifyPin 31323334
