@@ -26,28 +26,39 @@
 #include "hexUtils.h"
 #endif
 
-static dongleTransport transport = TRANSPORT_WINUSB;
+typedef enum {
+	TRANSPORT_NONE,
+	TRANSPORT_HID,
+	TRANSPORT_WINUSB
+} dongleTransport;
 
-void setTransport(dongleTransport transportParam) {
-	transport = transportParam;	
-}
+typedef struct dongleHandleInternal {
+	dongleTransport transport;
+	void* handle;
+} dongleHandleInternal;
 
 int initDongle(void) {
-	if (transport == TRANSPORT_HID) {
-		return initHid();
+	int result = initHid();
+	if (result < 0) {
+		return result;
 	}
-	else {
-		return initWinUSB();
+	result = initWinUSB();
+	if (result < 0) {
+		return result;
 	}
+	return result;
 }
 
 int exitDongle(void) {
-	if (transport == TRANSPORT_HID) {
-		return exitHid();
+	int result = exitHid();
+	if (result < 0) {
+		return result;
 	}
-	else {
-		return exitWinUSB();
+	result = exitWinUSB();
+	if (result < 0) {
+		return result;
 	}
+	return result;
 }
 
 int sendApduDongle(dongleHandle handle, const unsigned char *apdu, size_t apduLength, unsigned char *out, size_t outLength, int *sw) 
@@ -56,12 +67,16 @@ int sendApduDongle(dongleHandle handle, const unsigned char *apdu, size_t apduLe
 #ifdef DEBUG_COMM
 	printf("=> ");
 	displayBinary((unsigned char*)apdu, apduLength);
-#endif	
-	if (transport == TRANSPORT_HID) {
-		result = sendApduHid((hid_device*)handle, apdu, apduLength, out, outLength, sw);
+#endif		
+	if (handle->transport == TRANSPORT_HID) {
+		result = sendApduHid((libusb_device_handle*)handle->handle, apdu, apduLength, out, outLength, sw);
+	}
+	else
+	if (handle->transport == TRANSPORT_WINUSB) {
+		result = sendApduWinUSB((libusb_device_handle*)handle->handle, apdu, apduLength, out, outLength, sw);
 	}
 	else {
-		result = sendApduWinUSB((libusb_device_handle*)handle, apdu, apduLength, out, outLength, sw);
+		return -1;
 	}
 #ifdef DEBUG_COMM
 	if (result > 0) {
@@ -73,20 +88,36 @@ int sendApduDongle(dongleHandle handle, const unsigned char *apdu, size_t apduLe
 }
 
 dongleHandle getFirstDongle() {
-	if (transport == TRANSPORT_HID) {
-		return (dongleHandle)getFirstDongleHid();
+	dongleHandle result = (dongleHandle)malloc(sizeof(dongleHandleInternal));
+	if (result == NULL) {
+		return result;
 	}
-	else {
-		return (dongleHandle)getFirstDongleWinUSB();
+	result->transport = TRANSPORT_HID;
+	result->handle = getFirstDongleHid();
+	if (result->handle != NULL) {
+		return result;
 	}
+	result->transport = TRANSPORT_WINUSB;
+	result->handle = getFirstDongleWinUSB();
+	if (result->handle != NULL) {
+		return result;
+	}
+	free(result);
+	return NULL;
 }
 
 void closeDongle(dongleHandle handle) {
-	if (transport == TRANSPORT_HID) {
-		closeDongleHid((hid_device*)handle);
+	if (handle->transport == TRANSPORT_HID) {
+		closeDongleHid((libusb_device_handle*)handle->handle);
+	}
+	else
+	if (handle->transport == TRANSPORT_WINUSB) {
+		closeDongleWinUSB((libusb_device_handle*)handle->handle);
 	}
 	else {
-		closeDongleWinUSB((libusb_device_handle*)handle);
+		return;
 	}
+	handle->transport = TRANSPORT_NONE;
+	free(handle);
 }
 

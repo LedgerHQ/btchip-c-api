@@ -24,14 +24,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef enum {
-	TRANSPORT_HID,
-	TRANSPORT_WINUSB
-} dongleTransport;
+struct dongleHandleInternal;
+typedef struct dongleHandleInternal* dongleHandle;
 
-typedef void* dongleHandle;
-
-void setTransport(dongleTransport transport);
 int initDongle(void);
 int exitDongle(void);
 int sendApduDongle(dongleHandle handle, const unsigned char *apdu, size_t apduLength, unsigned char *out, size_t outLength, int *sw);

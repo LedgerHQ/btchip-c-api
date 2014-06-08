@@ -23,13 +23,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <hidapi/hidapi.h>
+#include <libusb-1.0/libusb.h>
 
 int initHid(void);
 int exitHid(void);
-int sendApduHid(hid_device *handle, const unsigned char *apdu, size_t apduLength, unsigned char *out, size_t outLength, int *sw);
-hid_device* getFirstDongleHid();
-void closeDongleHid(hid_device *handle);
+int sendApduHid(libusb_device_handle *handle, const unsigned char *apdu, size_t apduLength, unsigned char *out, size_t outLength, int *sw);
+libusb_device_handle* getFirstDongleHid();
+void closeDongleHid(libusb_device_handle *handle);
 
 #endif
 

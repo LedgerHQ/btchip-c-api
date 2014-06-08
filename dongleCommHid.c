@@ -20,48 +20,72 @@
 
 #define BTCHIP_VID 0x2581
 #define BTCHIP_HID_PID 0x2b7c
-#define PAGE_HIDGEN 65440
+#define BTCHIP_HID_BOOTLOADER_PID 0x1807
 
 #define TIMEOUT 10000
 #define SW1_DATA 0x61
+#define MAX_BLOCK 64
 
 int initHid() {
-	return 0;
+	return libusb_init(NULL);
 }
 
 int exitHid() {
+	libusb_exit(NULL);
 	return 0;
 }
 
-// TODO : support longer APDUs
-int sendApduHid(hid_device *handle, const unsigned char *apdu, size_t apduLength, unsigned char *out, size_t outLength, int *sw) {
-	unsigned char buffer[65];
+int sendApduHid(libusb_device_handle *handle, const unsigned char *apdu, size_t apduLength, unsigned char *out, size_t outLength, int *sw) {
+	unsigned char buffer[260];
+	unsigned char paddingBuffer[MAX_BLOCK];
 	int result;
 	int length;
 	int swOffset;
+	int remaining = apduLength;
+	int offset = 0;
 
-	if (apduLength > 65) {
-		return -1;
+	while (remaining > 0) {
+		int blockSize = (remaining > MAX_BLOCK ? MAX_BLOCK : remaining);
+		memset(paddingBuffer, 0, MAX_BLOCK);
+		memcpy(paddingBuffer, apdu + offset, blockSize);
+		result = libusb_interrupt_transfer(handle, 0x02, paddingBuffer, blockSize, &length, TIMEOUT);
+		if (result < 0) {
+			return result;
+		}		
+		offset += blockSize;
+		remaining -= blockSize;
 	}
-	memset(buffer, 0, sizeof(buffer));
-	buffer[0] = 0x00;
-	memcpy(buffer + 1, apdu, apduLength);
-	result = hid_write(handle, buffer, sizeof(buffer));
+	result = libusb_interrupt_transfer(handle, 0x82, buffer, MAX_BLOCK, &length, TIMEOUT);
 	if (result < 0) {
 		return result;
-	}
-	result = hid_read_timeout(handle, buffer, sizeof(buffer), TIMEOUT);
-	if (result <= 0) {
-		return result;
-	}
-	if (buffer[0] == SW1_DATA) {
+	}	
+	offset = MAX_BLOCK;
+	if (buffer[0] == SW1_DATA) {		
+		int dummy;
 		length = buffer[1];
-		if (outLength < length) {
-			return -1;
+		length += 2;
+		if (length > (MAX_BLOCK - 2)) {			
+			remaining = length - (MAX_BLOCK - 2);
+			while (remaining != 0) {
+				int blockSize;
+				if (remaining > MAX_BLOCK) {
+					blockSize = MAX_BLOCK;
+				}
+				else {
+					blockSize = remaining;
+				}
+				result = libusb_interrupt_transfer(handle, 0x82, buffer + offset, MAX_BLOCK, &dummy, TIMEOUT);
+				if (result < 0) {
+					return result;
+				}
+				offset += blockSize;
+				remaining -= blockSize;
+			}
 		}
+		length -= 2;
 		memcpy(out, buffer + 2, length);
 		swOffset = 2 + length;
-	}	
+	}
 	else {
 		length = 0;
 		swOffset = 0;
@@ -72,23 +96,22 @@ int sendApduHid(hid_device *handle, const unsigned char *apdu, size_t apduLength
 	return length;
 }
 
-hid_device* getFirstDongleHid() {
-	struct hid_device_info *devs, *cur_dev;
-	hid_device *dongle = NULL;
-	devs = hid_enumerate(BTCHIP_VID, BTCHIP_HID_PID);
-	cur_dev = devs;
-	while(cur_dev) {
-		if ((cur_dev->interface_number == 1) || (cur_dev->usage_page == PAGE_HIDGEN)) {
-			dongle = hid_open_path(cur_dev->path);
-			break;
+libusb_device_handle* getFirstDongleHid() {
+	libusb_device_handle *result = libusb_open_device_with_vid_pid(NULL, BTCHIP_VID, BTCHIP_HID_PID);
+	if (result == NULL) {
+		result = libusb_open_device_with_vid_pid(NULL, BTCHIP_VID, BTCHIP_HID_BOOTLOADER_PID);
+		if (result == NULL) {		
+			return NULL;
 		}
-		cur_dev = cur_dev->next;
 	}
-	hid_free_enumeration(devs);
-	return dongle;
+	libusb_detach_kernel_driver(result, 0);
+	libusb_claim_interface(result, 0);
+	return result;
 }
 
-void closeDongleHid(hid_device *handle) {
-	hid_close(handle);
+void closeDongleHid(libusb_device_handle *handle) {	
+	libusb_release_interface(handle, 0);
+	libusb_attach_kernel_driver(handle, 0);
+	libusb_close(handle);
 }
 
