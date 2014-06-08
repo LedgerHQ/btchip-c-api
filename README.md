@@ -350,6 +350,28 @@ Sample:
 btchip_setOperationMode "WALLET"
 ```
 
+### btchip_setTransportWinUSB
+
+This command is used to set the dongle communication mode to WinUSB (default)
+
+The USB device will be seen as 2581:1b7c
+
+Sample:
+```
+btchip_setTransportWinUSB
+```
+
+### btchip_setTransportHID
+
+This command is used to set the dongle communication mode to Generic HID
+
+The USB device will be seen as 2581:2b7c
+
+Sample:
+```
+btchip_setTransportHID
+```
+
 Generic wallet commands
 ------------------------
 
