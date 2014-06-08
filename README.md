@@ -11,9 +11,9 @@ Build with GNU make (needs libusb 1.0 development APIs), each command is describ
 Building on Windows
 --------------------
 
-  * Download MinGW installer mingw-get from http://sourceforge.net/projects/mingw/files/Installer/ with the following options :
-     * from basic : mingw32-base, msys-base
-     * from all : mingw32-autoconf, mingw32-automake, mingw32-libtool, msys-libtool, msys-gcc
+  * Download MinGW installer mingw-get from http://sourceforge.net/projects/mingw/files/Installer/
+  * Install packages with mingw-get :
+  	 * mingw-get install mingw32-autoconf-bin mingw32-automake-bin mingw32-base-bin mingw32-binutils-bin mingw32-gcc-bin mingw32-libstdc++-dll mingw32-libtool-bin mingw32-make-bin msys-autoconf-bin msys-automake-bin msys-base-bin msys-bash-bin msys-binutils-bin msys-core-bin msys-coreutils-bin msys-libtool-bin msys-make-bin
   * Get libusb from git : git clone git://git.libusb.org/libusb.git
   * Compile libusb
      * Start msys
