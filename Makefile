@@ -1,6 +1,7 @@
+LIBUSB = libusb
 CC     = gcc
-CFLAGS = -Wall -Werror -Os -DEXTRA_DEBUG -DDEBUG_COMM -I. -I/usr/local/include
-LIBS = -L/usr/local/lib
+CFLAGS = -Wall -Werror -Os -DEXTRA_DEBUG -DDEBUG_COMM -I. -I/usr/local/include -I$(LIBUSB)/include
+LIBS = -L/usr/local/lib -L$(LIBUSB)/mingw32/dll
 OBJS   = hexUtils.o btchipUtils.o bitcoinVarint.o bitcoinTransaction.o bitcoinAmount.o btchipArgs.o
 OBJS_COMM = $(OBJS) dongleCommHid.o dongleCommWinUSB.o dongleComm.o
 
