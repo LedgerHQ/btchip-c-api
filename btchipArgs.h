@@ -28,8 +28,12 @@
 #define MODE_SERVER 0x04
 #define MODE_DEVELOPER 0x08
 
+#define POS_SEEDKEY 0x01
+#define POS_ENCRYPTEDSEED 0x02
+
 int convertMode(char *mode);
 int convertOption(char *option);
 int convertChain(char *chain);
+int convertPos(char *pos);
 
 #endif

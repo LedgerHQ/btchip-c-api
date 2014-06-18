@@ -72,3 +72,16 @@ int convertChain(char *chain) {
 	}
 }
 
+int convertPos(char *pos) {
+	if (strcasecmp(pos, "seedkey") == 0) {
+		return POS_SEEDKEY;
+	}
+	else
+	if (strcasecmp(pos, "encryptedseed") == 0) {
+		return POS_ENCRYPTEDSEED;
+	}
+	else {
+		return -1;
+	}
+}
+

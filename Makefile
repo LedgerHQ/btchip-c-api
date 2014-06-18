@@ -5,13 +5,13 @@ LIBS = -L/usr/local/lib -L$(LIBUSB)/mingw32/dll
 OBJS   = hexUtils.o btchipUtils.o bitcoinVarint.o bitcoinTransaction.o bitcoinAmount.o btchipArgs.o
 OBJS_COMM = $(OBJS) dongleCommHid.o dongleCommWinUSB.o dongleComm.o
 
-all: btchip_setup btchip_setup_forward btchip_setup_143 btchip_verifyPin \
+all: btchip_setup btchip_setup_forward btchip_setup_kiosk btchip_setup_143 btchip_verifyPin \
 	 btchip_getWalletPublicKey btchip_getOperationMode btchip_setOperationMode \
 	 btchip_getTrustedInput btchip_startUntrustedTransaction btchip_finalizeInput \
 	 btchip_finalizeInputFull btchip_untrustedHashSign btchip_signMessagePrepare \
 	 btchip_signMessageSign btchip_composeMofNStart btchip_composeMofNContinue \
 	 btchip_importPrivateKey btchip_getPublicKey btchip_deriveBip32Key btchip_signImmediate \
-	 btchip_verifyImmediate btchip_getRandom btchip_getFirmwareVersion \
+	 btchip_verifyImmediate btchip_getRandom btchip_getFirmwareVersion btchip_getPosSeed \
 	 btchip_setTransportWinUSB btchip_setTransportHID \
 	 btchip_util_runScript btchip_util_parseRawTransaction btchip_util_compressPublicKey \
 	 btchip_util_getRegularInputScript btchip_util_getP2SHRedeemScript \
@@ -25,6 +25,9 @@ btchip_setup: commands/btchip_setup.o $(OBJS_COMM)
 
 btchip_setup_forward: commands/btchip_setup_forward.o $(OBJS_COMM)
 	gcc commands/btchip_setup_forward.o $(LIBS) $(OBJS_COMM) -o bin/btchip_setup_forward -l usb-1.0
+
+btchip_setup_kiosk: commands/btchip_setup_kiosk.o $(OBJS_COMM)
+	gcc commands/btchip_setup_kiosk.o $(LIBS) $(OBJS_COMM) -o bin/btchip_setup_kiosk -l usb-1.0
 
 btchip_setup_143: commands/btchip_setup_143.o $(OBJS_COMM)
 	gcc commands/btchip_setup_143.o $(LIBS) $(OBJS_COMM) -o bin/btchip_setup_143 -l usb-1.0
@@ -88,6 +91,9 @@ btchip_getRandom: commands/btchip_getRandom.o $(OBJS_COMM)
 
 btchip_getFirmwareVersion: commands/btchip_getFirmwareVersion.o $(OBJS_COMM)
 	gcc commands/btchip_getFirmwareVersion.o $(LIBS) $(OBJS_COMM) -o bin/btchip_getFirmwareVersion -l usb-1.0
+
+btchip_getPosSeed: commands/btchip_getPosSeed.o $(OBJS_COMM)
+	gcc commands/btchip_getPosSeed.o $(LIBS) $(OBJS_COMM) -o bin/btchip_getPosSeed -l usb-1.0
 
 btchip_setTransportWinUSB: commands/btchip_setTransportWinUSB.o $(OBJS_COMM)
 	gcc commands/btchip_setTransportWinUSB.o $(LIBS) $(OBJS_COMM) -o bin/btchip_setTransportWinUSB -l usb-1.0
