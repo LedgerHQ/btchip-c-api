@@ -14,8 +14,8 @@ Building on Windows
   * Download MinGW installer mingw-get from http://sourceforge.net/projects/mingw/files/Installer/
   * Install packages with mingw-get :
   	 * mingw-get install mingw32-autoconf-bin mingw32-automake-bin mingw32-base-bin mingw32-binutils-bin mingw32-gcc-bin mingw32-libstdc++-dll mingw32-libtool-bin mingw32-make-bin msys-autoconf-bin msys-automake-bin msys-base-bin msys-bash-bin msys-binutils-bin msys-core-bin msys-coreutils-bin msys-libtool-bin msys-make-bin
-  * Get a binary version of libusb from a stable release : http://sourceforge.net/projects/libusb/files/libusb-1.0/libusb-1.0.18/libusb-1.0.18-win.7z/download and install it into a libusb/ folder in this extracted repository
-  * Compile the APIs 
+  * Get a binary version of libusb from a stable release : http://sourceforge.net/projects/libusb/files/libusb-1.0/libusb-1.0.18/libusb-1.0.18-win.7z/download and install it into a libusb/ folder in this repository
+  * Compile this project 
      * Start msys
      * Modify the compile path (update your drive reference, might not be necessary) : export PATH=$PATH:/c/mingw/bin
      * Run : make
