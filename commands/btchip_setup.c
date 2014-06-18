@@ -173,12 +173,12 @@ int main(int argc, char **argv) {
 		developerKeyLength = 0;
 	}
 	else {
-		result = hexToBin(argv[10], developerKey, sizeof(developerKey));
-		if (result == 0) {
+		developerKeyLength = hexToBin(argv[10], developerKey, sizeof(developerKey));
+		if (developerKeyLength == 0) {
 			fprintf(stderr, "Invalid developer key\n");
 			return 0;
 		}
-		if (result != sizeof(developerKey)) {
+		if (developerKeyLength != sizeof(developerKey)) {
 			fprintf(stderr, "Invalid developer key length\n");
 			return 0;
 		}
