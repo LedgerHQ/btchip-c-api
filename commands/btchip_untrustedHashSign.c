@@ -112,7 +112,7 @@ int main(int argc, char **argv) {
 	in[apduSize++] = strlen(pin);
 	memcpy(in + apduSize, pin, strlen(pin));
 	apduSize += strlen(pin);
-	writeUint32BE(lockTime, in + apduSize);
+	writeUint32BE(in + apduSize, lockTime);
 	apduSize += sizeof(lockTime);
 	in[apduSize++] = sigHashType;
 	in[OFFSET_CDATA] = (apduSize - 5);
