@@ -120,6 +120,22 @@ int getTrustedInput(dongleHandle dongle, bitcoinTransaction *transaction, uint32
 		memcpy(in + apduSize, currentOutput->amount, sizeof(currentOutput->amount));
 		apduSize += sizeof(currentOutput->amount);
 		apduSize += writeVarint(currentOutput->scriptLength, (in + apduSize), (sizeof(in) - apduSize));
+		in[OFFSET_CDATA] = (apduSize - 5);
+		result = sendApduDongle(dongle, in, apduSize, out, sizeof(out), &sw);
+		if (result < 0) {
+			fprintf(stderr, "I/O error\n");
+			return -1;
+		}
+		if (sw != SW_OK) {
+			fprintf(stderr, "Dongle application error : %.4x\n", sw);
+			return -1;
+		}		
+		apduSize = 0;
+		in[apduSize++] = BTCHIP_CLA;
+		in[apduSize++] = BTCHIP_INS_GET_TRUSTED_INPUT;
+		in[apduSize++] = 0x80;
+		in[apduSize++] = 0x00;
+		in[apduSize++] = 0x00;
 		memcpy(in + apduSize, currentOutput->script, currentOutput->scriptLength);
 		apduSize += currentOutput->scriptLength;
 		in[OFFSET_CDATA] = (apduSize - 5);
