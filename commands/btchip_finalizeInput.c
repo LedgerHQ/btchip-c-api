@@ -50,12 +50,12 @@ int main(int argc, char **argv) {
 	char address[100];
 	int64_t amount;
 	int64_t fees;
-	uint32_t changeAccount;
-	uint32_t changeIndex;
-	int chain;
+	unsigned int keyPath[10];
+	int keyPathLength;
+	int i;
 
-	if (argc < 7) {
-		fprintf(stderr, "Usage : %s [output address] [amount (in BTC string)] [fees (in BTC string)] [chain for change (INTERNAL or EXTERNAL)] [account number for change] [index for change]\n", argv[0]);
+	if (argc < 5) {
+		fprintf(stderr, "Usage : %s [output address] [amount (in BTC string)] [fees (in BTC string)] [key path for change address in a/b/c format using n' for hardened nodes]\n", argv[0]);
 		return 0;
 	}
 	address[sizeof(address) - 1] = '\0';
@@ -68,23 +68,11 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "Invalid fees\n");
 		return 0;
 	}
-	chain = convertChain(argv[4]);
-	if (chain < 0) {
-		fprintf(stderr, "Invalid chain\n");
+	keyPathLength = convertPath(argv[4], keyPath);
+	if (keyPathLength < 0) {
+		fprintf(stderr, "Invalid key path\n");
 		return 0;
 	}
-	result = strtol(argv[5], NULL, 10);
-	if (result < 0) {
-		fprintf(stderr, "Invalid change account number\n");
-		return 0;
-	}
-	changeAccount = result;
-	result = strtol(argv[6], NULL, 10);
-	if (result < 0) {
-		fprintf(stderr, "Invalid change index\n");
-		return 0;
-	}
-	changeIndex = result;
 	initDongle();
 	dongle = getFirstDongle();
 	if (dongle == NULL) {
@@ -95,7 +83,7 @@ int main(int argc, char **argv) {
 	in[apduSize++] = BTCHIP_CLA;
 	in[apduSize++] = BTCHIP_INS_HASH_INPUT_FINALIZE;
 	in[apduSize++] = 0x02;
-	in[apduSize++] = chain;
+	in[apduSize++] = 0x00;
 	in[apduSize++] = 0x00;
 	in[apduSize++] = strlen(address);	
 	memcpy(in + apduSize, address, strlen(address));
@@ -104,10 +92,11 @@ int main(int argc, char **argv) {
 	apduSize += sizeof(amount);
 	writeHexAmountBE(fees, in + apduSize);
 	apduSize += sizeof(fees);
-	writeUint32BE(in + apduSize, changeAccount);
-	apduSize += sizeof(changeAccount);
-	writeUint32BE(in + apduSize, changeIndex);
-	apduSize += sizeof(changeIndex);
+	in[apduSize++] = keyPathLength;
+	for (i=0; i<keyPathLength; i++) {
+		writeUint32BE(in + apduSize, keyPath[i]);
+		apduSize += 4;
+	}	
 	in[OFFSET_CDATA] = (apduSize - 5);
 	result = sendApduDongle(dongle, in, apduSize, out, sizeof(out), &sw);
 	exitDongle();

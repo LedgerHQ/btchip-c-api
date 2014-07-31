@@ -31,9 +31,12 @@
 #define POS_SEEDKEY 0x01
 #define POS_ENCRYPTEDSEED 0x02
 
+#define MAX_BIP32_PATH 10
+
 int convertMode(char *mode);
 int convertOption(char *option);
 int convertChain(char *chain);
 int convertPos(char *pos);
+int convertPath(char *path, unsigned int *pathBinary);
 
 #endif

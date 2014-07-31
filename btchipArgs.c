@@ -54,6 +54,10 @@ int convertOption(char *option) {
 	if (strcasecmp(option, "FREE_SIGHASHTYPE") == 0) {
 		return 0x04;
 	}
+	else
+	if (strcasecmp(option, "NO_2FA_P2SH") == 0) {
+		return 0x08;
+	}
 	else {
 		return -1;
 	}
@@ -85,3 +89,27 @@ int convertPos(char *pos) {
 	}
 }
 
+int convertPath(char *path, unsigned int *pathBinary) {
+        int index = 0;
+        char *pathComponent = strtok(path, "/");
+        while (pathComponent != NULL) {
+			char number[20];
+			unsigned char isHardened = 0;
+			if (index == MAX_BIP32_PATH) {
+				return -1;
+			}						
+			strncpy(number, pathComponent, sizeof(number));
+			number[sizeof(number) - 1] = '\0';
+			if (number[strlen(number) - 1] == '\'') {
+				isHardened = 1;
+				number[strlen(number) - 1] = '\0';
+			}
+			pathBinary[index] = strtol(number, NULL, 10);
+			if (isHardened) {
+				pathBinary[index] |= 0x80000000;
+			}
+			index++;
+			pathComponent = strtok(NULL, "/");
+        }
+        return index;
+}

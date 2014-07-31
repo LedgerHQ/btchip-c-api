@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
 	if (argc < 11) {
 		fprintf(stderr, "Usage : %s with the following parameters\n", argv[0]);
 		fprintf(stderr, "\tOperation mode flags combined with + (WALLET|RELAXED|SERVER|DEVELOPER)]\n");
-		fprintf(stderr, "\tFeatures flag combined with + (UNCOMPRESSED_KEYS|RFC6979|FREE_SIGHASHTYPE)\n");
+		fprintf(stderr, "\tFeatures flag combined with + (UNCOMPRESSED_KEYS|RFC6979|FREE_SIGHASHTYPE|NO_2FA_P2SH)\n");
 		fprintf(stderr, "\thex key version (1 byte or empty for bitcoin mainnet)\n");
 		fprintf(stderr, "\thex key version P2SH (1 byte or empty for bitcoin mainnet)\n");
 		fprintf(stderr, "\thex user pin (min 4 bytes)\n");

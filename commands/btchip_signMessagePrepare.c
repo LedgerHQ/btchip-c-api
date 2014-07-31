@@ -37,38 +37,26 @@ int main(int argc, char **argv) {
 	int result;
 	int sw;
 	int apduSize;		
-	int chain;
-	uint32_t account;
-	uint32_t chainIndex;	
 	char message[140];
+	unsigned int keyPath[10];
+	int keyPathLength;	
+	int i;
 
-	if (argc < 5) {
-		fprintf(stderr, "Usage : %s [chain (INTERNAL or EXTERNAL)] [private key account number] [private key chain index] [message]\n", argv[0]);
+	if (argc < 3) {
+		fprintf(stderr, "Usage : %s [key path in a/b/c format using n' for hardened nodes] [message]\n", argv[0]);
 		return 0;
 	}
-	chain = convertChain(argv[1]);
-	if (chain < 0) {
-		fprintf(stderr, "Invalid chain\n");
+	keyPathLength = convertPath(argv[1], keyPath);
+	if (keyPathLength < 0) {
+		fprintf(stderr, "Invalid key path\n");
 		return 0;
 	}
-	result = strtol(argv[2], NULL, 10);
-	if (result < 0) {
-		fprintf(stderr, "Invalid account number\n");
-		return 0;
-	}
-	account = result;
-	result = strtol(argv[3], NULL, 10);
-	if (result < 0) {
-		fprintf(stderr, "Invalid chain index\n");
-		return 0;
-	}
-	chainIndex = result;
-	if (strlen(argv[4]) > sizeof(message) - 1) {
+	if (strlen(argv[2]) > sizeof(message) - 1) {
 		fprintf(stderr, "Invalid message\n");
 		return 0;
 	}
 	message[sizeof(message) - 1] = '\0';	
-	strncpy(message, argv[4], sizeof(message) - 1);
+	strncpy(message, argv[2], sizeof(message) - 1);
 	initDongle();
 	dongle = getFirstDongle();
 	if (dongle == NULL) {
@@ -81,11 +69,11 @@ int main(int argc, char **argv) {
 	in[apduSize++] = 0x00;
 	in[apduSize++] = 0x00;
 	in[apduSize++] = 0x00;
-	writeUint32BE(in + apduSize, account);
-	apduSize += sizeof(account);
-	writeUint32BE(in + apduSize, chainIndex);
-	apduSize += sizeof(chainIndex);
-	in[apduSize++] = chain;
+	in[apduSize++] = keyPathLength;
+	for (i=0; i<keyPathLength; i++) {
+		writeUint32BE(in + apduSize, keyPath[i]);
+		apduSize += 4;
+	}		
 	in[apduSize++] = strlen(message);
 	memcpy(in + apduSize, message, strlen(message));
 	apduSize += strlen(message);

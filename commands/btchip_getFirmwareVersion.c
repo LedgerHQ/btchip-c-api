@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
 	in[apduSize++] = BTCHIP_INS_GET_FIRMWARE_VERSION;
 	in[apduSize++] = 0x00;
 	in[apduSize++] = 0x00;
-	in[apduSize++] = 0x05;
+	in[apduSize++] = 0x00;
 	result = sendApduDongle(dongle, in, apduSize, out, sizeof(out), &sw);
 	closeDongle(dongle);
 	exitDongle();
@@ -46,6 +46,8 @@ int main(int argc, char **argv) {
 		out[2] = 0x01;		
 		out[3] = 0x04;
 		out[4] = 0x03;
+		out[5] = 0x01;
+		out[6] = 0x43;
 	}
 	else
 	if (sw != SW_OK) {
@@ -53,6 +55,9 @@ int main(int argc, char **argv) {
 		return 0;
 	}
 	printf("Firmware version %d.%d.%d\n", ((out[1] << 8) + out[2]), out[3], out[4]);
+	if (result > 5) {
+		printf("Loader ID %d.%d.%d\n", (out[5] & 0x0F), (out[6] >> 4), (out[6] & 0x0F));
+	}
 	printf("Using compressed keys : %s\n", (out[0] == 0x01 ? "yes" : "no"));
 
 	return 1;

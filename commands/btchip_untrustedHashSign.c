@@ -37,56 +37,44 @@ int main(int argc, char **argv) {
 	int result;
 	int sw;
 	int apduSize;		
-	int chain;
-	uint32_t account;
-	uint32_t chainIndex;	
 	char pin[100];
 	uint32_t lockTime;
 	unsigned char sigHashType;
+	unsigned int keyPath[10];
+	int keyPathLength;		
+	int i;
 
-	if (argc < 7) {
-		fprintf(stderr, "Usage : %s [chain (INTERNAL or EXTERNAL)] [private key account number] [private key chain index] [second factor ascii, or empty string] [locktime or empty for default] [sighashType or empty for SIGHASH_ALL]\n", argv[0]);
+	if (argc < 5) {
+		fprintf(stderr, "Usage : %s [key path in a/b/c format using n' for hardened nodes] [second factor ascii, or empty string] [locktime or empty for default] [sighashType or empty for SIGHASH_ALL]\n", argv[0]);
 		return 0;
 	}
-	chain = convertChain(argv[1]);
-	if (chain < 0) {
-		fprintf(stderr, "Invalid chain\n");
+	keyPathLength = convertPath(argv[1], keyPath);
+	if (keyPathLength < 0) {
+		fprintf(stderr, "Invalid key path\n");
 		return 0;
 	}
-	result = strtol(argv[2], NULL, 10);
-	if (result < 0) {
-		fprintf(stderr, "Invalid account number\n");
-		return 0;
-	}
-	account = result;
-	result = strtol(argv[3], NULL, 10);
-	if (result < 0) {
-		fprintf(stderr, "Invalid chain index\n");
-		return 0;
-	}
-	chainIndex = result;
-	if (strlen(argv[4]) > sizeof(pin) - 1) {
+	if (strlen(argv[2]) > sizeof(pin) - 1) {
 		fprintf(stderr, "Invalid second factor\n");
 		return 0;
 	}
 	pin[sizeof(pin) - 1] = '\0';	
-	strncpy(pin, argv[4], sizeof(pin) - 1);
-	if (strlen(argv[5]) == 0) {
+	strncpy(pin, argv[2], sizeof(pin) - 1);
+	if (strlen(argv[3]) == 0) {
 		lockTime = 0;
 	}
 	else {
-		result = strtol(argv[5], NULL, 10);
+		result = strtol(argv[3], NULL, 10);
 		if (result < 0) {
 			fprintf(stderr, "Invalid chain index\n");
 			return 0;
 		}
 		lockTime = result;
 	}
-	if (strlen(argv[6]) == 0) {
+	if (strlen(argv[4]) == 0) {
 		sigHashType = 0x01;
 	}
 	else {
-		result = hexToBin(argv[6], &sigHashType, sizeof(sigHashType));
+		result = hexToBin(argv[4], &sigHashType, sizeof(sigHashType));
 		if (result < 0) {
 			fprintf(stderr, "Invalid sigHashType\n");
 			return 0;
@@ -104,11 +92,11 @@ int main(int argc, char **argv) {
 	in[apduSize++] = 0x00;
 	in[apduSize++] = 0x00;
 	in[apduSize++] = 0x00;
-	writeUint32BE(in + apduSize, account);
-	apduSize += sizeof(account);
-	writeUint32BE(in + apduSize, chainIndex);
-	apduSize += sizeof(chainIndex);
-	in[apduSize++] = chain;
+	in[apduSize++] = keyPathLength;
+	for (i=0; i<keyPathLength; i++) {
+		writeUint32BE(in + apduSize, keyPath[i]);
+		apduSize += 4;
+	}			
 	in[apduSize++] = strlen(pin);
 	memcpy(in + apduSize, pin, strlen(pin));
 	apduSize += strlen(pin);
