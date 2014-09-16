@@ -39,9 +39,8 @@ int main(int argc, char **argv) {
 	unsigned char wipePin[0x04];
 	int wipePinLength;
 	unsigned char keymapEncoding[119];
-	unsigned char seed[32];
+	unsigned char seed[64];
 	int seedLength;
-	unsigned char userEntropy[32];
 	unsigned char developerKey[16];
 	int developerKeyLength;
 	unsigned char in[260];
@@ -51,7 +50,7 @@ int main(int argc, char **argv) {
 	int apduSize;	
 	char *arg;
 
-	if (argc < 11) {
+	if (argc < 10) {
 		fprintf(stderr, "Usage : %s with the following parameters\n", argv[0]);
 		fprintf(stderr, "\tOperation mode flags combined with + (WALLET|RELAXED|SERVER|DEVELOPER)]\n");
 		fprintf(stderr, "\tFeatures flag combined with + (UNCOMPRESSED_KEYS|RFC6979|FREE_SIGHASHTYPE|NO_2FA_P2SH)\n");
@@ -60,8 +59,7 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "\thex user pin (min 4 bytes)\n");
 		fprintf(stderr, "\thex wipe pin (or empty)\n");
 		fprintf(stderr, "\tkeymap encoding (QWERTY or AZERTY or 119 bytes)\n");
-		fprintf(stderr, "\tseed (32 bytes or empty to generate a new one)\n");
-		fprintf(stderr, "\tuser entropy (32 bytes or empty, must be empty if restoring a seed)\n");
+		fprintf(stderr, "\tseed (between 32 and 64 bytes or empty to generate a new one)\n");
 		fprintf(stderr, "\tdeveloper key (16 bytes or empty)\n");
 		return 0;
 	}
@@ -149,31 +147,17 @@ int main(int argc, char **argv) {
 			fprintf(stderr, "Invalid seed\n");
 			return 0;
 		}
-		if (result != sizeof(seed)) {
+		if (result < 32) {
 			fprintf(stderr, "Invalid seed length\n");
 			return 0;
 		}
 		seedLength = result;
 	}
 	if (strlen(argv[9]) == 0) {
-		memset(userEntropy, 0, sizeof(userEntropy));
-	}
-	else {
-		if (seedLength != 0) {
-			fprintf(stderr, "Cannot provide user entropy when restoring a seed\n");
-			return 0;
-		}
-		result = hexToBin(argv[9], userEntropy, sizeof(userEntropy));
-		if (result == 0) {
-			fprintf(stderr, "Invalid user entropy\n");
-			return 0;
-		}
-	}
-	if (strlen(argv[10]) == 0) {
 		developerKeyLength = 0;
 	}
 	else {
-		developerKeyLength = hexToBin(argv[10], developerKey, sizeof(developerKey));
+		developerKeyLength = hexToBin(argv[9], developerKey, sizeof(developerKey));
 		if (developerKeyLength == 0) {
 			fprintf(stderr, "Invalid developer key\n");
 			return 0;
@@ -205,17 +189,11 @@ int main(int argc, char **argv) {
 	in[apduSize++] = wipePinLength;
 	memcpy(in + apduSize, wipePin, wipePinLength);
 	apduSize += wipePinLength;
-	memcpy(in + apduSize, keymapEncoding, sizeof(keymapEncoding));
-	apduSize += sizeof(keymapEncoding);
-	in[apduSize++] = (seedLength == 0 ? 0x00 : 0x01);
+	in[apduSize++] = seedLength;
 	if (seedLength != 0) {
-		memcpy(in + apduSize, seed, sizeof(seed));
-		apduSize += sizeof(seed);
+		memcpy(in + apduSize, seed, seedLength);
+		apduSize += seedLength;
 	}
-	else {
-		memcpy(in + apduSize, userEntropy, sizeof(userEntropy));
-		apduSize += sizeof(userEntropy);
-	}	
 	in[apduSize++] = developerKeyLength;
 	if (developerKeyLength != 0) {
 		memcpy(in + apduSize, developerKey, sizeof(developerKey));
@@ -224,7 +202,6 @@ int main(int argc, char **argv) {
 	in[OFFSET_CDATA] = (apduSize - 5);
 	printf("Setup in progress, please wait ...\n");
 	result = sendApduDongle(dongle, in, apduSize, out, sizeof(out), &sw);
-	exitDongle();
 	if (result < 0) {
 		fprintf(stderr, "I/O error\n");
 		return 0;
@@ -246,8 +223,34 @@ int main(int argc, char **argv) {
 	printf("Developer key wrapping key : ");
 	displayBinary(out + apduSize, 16);
 	apduSize += 16;
+
+	// Set up the keyboard
+	printf("Setting up keymap\n");
+	apduSize = 0;
+	in[apduSize++] = BTCHIP_CLA;
+	in[apduSize++] = BTCHIP_INS_SET_KEYMAP;
+	in[apduSize++] = 0x00;
+	in[apduSize++] = 0x00;
+	in[apduSize++] = sizeof(keymapEncoding);
+	memcpy(in + apduSize, keymapEncoding, sizeof(keymapEncoding));
+	apduSize += sizeof(keymapEncoding);
+	result = sendApduDongle(dongle, in, apduSize, out, sizeof(out), &sw);
+	if (result < 0) {
+		fprintf(stderr, "I/O error\n");
+		return 0;
+	}
+	if (sw != SW_OK) {
+		fprintf(stderr, "Dongle application error : %.4x\n", sw);
+		return 0;
+	}
+
+	exitDongle();
+
 	if (seedLength == 0) {
 		printf("Powercycle to read the generated seed\n");
+	}
+	else {
+		printf("Setup done\n");
 	}
 	return 1;
 }

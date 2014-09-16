@@ -35,6 +35,7 @@ int main(int argc, char **argv) {
 	int sw;
 	int apduSize;	
 	int i;
+	char address[40];
 
 	if (argc < 2) {
 		fprintf(stderr, "Usage : %s [key path in a/b/c format using n' for hardened nodes]\n", argv[0]);
@@ -77,7 +78,11 @@ int main(int argc, char **argv) {
 	printf("Uncompressed public key : ");
 	displayBinary(out + 1, out[0]);
 	apduSize += out[0] + 1;
-	out[apduSize + 1 + out[apduSize]] = '\0';
-	printf("Address : %s\n", out + apduSize + 1);
+	memcpy((unsigned char*)address, out + apduSize + 1, out[apduSize]);
+	address[out[apduSize]] = '\0';
+	apduSize += out[apduSize] + 1;
+	printf("Address : %s\n", address);
+	printf("Chaincode : ");
+	displayBinary(out + apduSize, 32);
 	return 1;
 }
