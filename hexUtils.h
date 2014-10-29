@@ -18,7 +18,7 @@
 
 #ifndef __HEXUTILS_H__
 
-#define _HEXUTILS_H__
+#define __HEXUTILS_H__
 
 #include <stdio.h>
 #include <stdlib.h>
