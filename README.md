@@ -139,6 +139,8 @@ On any dongle
 ```
 Compute the P2SH address
 
+**Note** : This method is currently disabled - you'll have to compute the P2SH address yourself
+
 > btchip_composeMofNStart 2 2 0348bb1fade0adde1bf202726e6db5eacd2063fce7ecf8bbfd17377f09218d5814
 
 Powercycle to read the second factor 
@@ -640,6 +642,8 @@ This command set is used to generate a P2SH M of N multisignature address
 
 #### btchip_composeMofNStart
 
+**Note**: This method is currently disabled
+
 This command is used to start building the P2SH address
 
 Run with the following parameters:
@@ -656,6 +660,8 @@ btchip_composeMofNStart 2 2 0348bb1fade0adde1bf202726e6db5eacd2063fce7ecf8bbfd17
 ```
 
 #### btchip_composeMofNContinue
+
+**Note** : This method is currently disabled
 
 This command is used to keep on building the P2SH address
 
@@ -792,10 +798,18 @@ Attestation public keys
 
 ### Batch ID 01, Derivation index ID 01
 
-The following attestation public key is used for test samples
+The following attestation public key is used for test samples and production cards before 1.4.11
 
 ```
 04223314cdffec8740150afe46db3575fae840362b137316c0d222a071607d61b2fd40abb2652a7fea20e3bb3e64dc6d495d59823d143c53c4fe4059c5ff16e406
+```
+
+### Batch ID 02, Derivation index ID 01
+
+The following attestation public key is used for production cards from 1.4.11 
+
+```
+04c370d4013107a98dfef01d6db5bb3419deb9299535f0be47f05939a78b314a3c29b51fcaa9b3d46fa382c995456af50cd57fb017c0ce05e4a31864a79b8fbfd6
 ```
 
 License
