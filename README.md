@@ -136,10 +136,11 @@ Compressed public key : 035a86ac207f84ef5a42878576ba174f27e494c5a6acaa4592a4a007
 
 On any dongle 
 
+**Note** : This method is currently disabled - you'll have to compute the P2SH address yourself from the public keys 
+
+
 ```
 Compute the P2SH address
-
-**Note** : This method is currently disabled - you'll have to compute the P2SH address yourself
 
 > btchip_composeMofNStart 2 2 0348bb1fade0adde1bf202726e6db5eacd2063fce7ecf8bbfd17377f09218d5814
 
