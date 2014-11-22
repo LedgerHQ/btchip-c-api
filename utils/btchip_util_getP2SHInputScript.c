@@ -26,7 +26,7 @@
 #define OP_1_BEFORE 0x50
 #define OP_PUSHDATA1 0x4c
 #define OP_PUSHDATA2 0x4d
-#define N_MAX 3
+#define N_MAX 15 
 
 #define BUFFER_SIZE 100
 

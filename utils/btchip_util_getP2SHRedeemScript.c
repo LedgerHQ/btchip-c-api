@@ -25,7 +25,7 @@
 
 #define OP_1_BEFORE 0x50
 #define OP_CHECKMULTISIG 0xAE
-#define N_MAX 3
+#define N_MAX 15 
 
 #define BUFFER_SIZE 100
 
