@@ -106,6 +106,7 @@ int main(int argc, char **argv) {
 	in[OFFSET_CDATA] = (apduSize - 5);
 	printf("Singing, please wait ...\n");
 	result = sendApduDongle(dongle, in, apduSize, out, sizeof(out), &sw);
+	closeDongle(dongle);
 	exitDongle();
 	if (result < 0) {
 		fprintf(stderr, "I/O error\n");

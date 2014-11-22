@@ -44,6 +44,7 @@ int main(int argc, char **argv) {
 	memcpy(in + apduSize, pin, result);
 	apduSize += result;
 	result = sendApduDongle(dongle, in, apduSize, out, sizeof(out), &sw);
+	closeDongle(dongle);
 	exitDongle();
 	if (result < 0) {
 		fprintf(stderr, "I/O error\n");

@@ -56,6 +56,7 @@ int main(int argc, char **argv) {
 	in[apduSize++] = 0x00;
 	in[apduSize++] = 0x00;
 	result = sendApduDongle(dongle, in, apduSize, out, sizeof(out), &sw);
+	closeDongle(dongle);
 	exitDongle();
 	if (result < 0) {
 		fprintf(stderr, "I/O error\n");

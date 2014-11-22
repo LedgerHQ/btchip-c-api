@@ -39,7 +39,7 @@ typedef struct prevout {
 } prevout;
 
 int main(int argc, char **argv) {
-	dongleHandle dongle;
+	dongleHandle dongle = NULL;
 	unsigned char in[260];
 	unsigned char out[260];
 	int result;
@@ -219,6 +219,9 @@ int main(int argc, char **argv) {
 	status = 1;
 
 cleanup:
+	if (dongle != NULL) {
+		closeDongle(dongle);
+	}
 	exitDongle();
 
 	if (transactions != NULL) {

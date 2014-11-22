@@ -81,18 +81,21 @@ int main(int argc, char **argv) {
 		in[OFFSET_CDATA] = (apduSize - 5);
 		result = sendApduDongle(dongle, in, apduSize, out, sizeof(out), &sw);
 		if (result < 0) {
+			closeDongle(dongle);
 			exitDongle();
 			free(outputData);
 			fprintf(stderr, "I/O error\n");
 			return 0;
 		}
 		if (sw != SW_OK) {
+			closeDongle(dongle);
 			exitDongle();
 			free(outputData);			
 			fprintf(stderr, "Dongle application error : %.4x\n", sw);
 			return 0;
 		}			
 	}
+	closeDongle(dongle);
 	exitDongle();
 	apduSize = 0;
 	if (out[apduSize] == 0x00) {

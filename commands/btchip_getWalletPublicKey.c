@@ -65,6 +65,7 @@ int main(int argc, char **argv) {
 	}
 	printf("Computing public key, please wait ...\n");
 	result = sendApduDongle(dongle, in, apduSize, out, sizeof(out), &sw);
+	closeDongle(dongle);
 	exitDongle();
 	if (result < 0) {
 		fprintf(stderr, "I/O error\n");

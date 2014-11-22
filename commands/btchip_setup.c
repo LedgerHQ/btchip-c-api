@@ -244,6 +244,7 @@ int main(int argc, char **argv) {
 		return 0;
 	}
 
+	closeDongle(dongle);
 	exitDongle();
 
 	if (seedLength == 0) {

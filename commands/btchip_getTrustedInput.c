@@ -51,6 +51,7 @@ int main(int argc, char **argv) {
 		return 0;
 	}
 	result = getTrustedInput(dongle, transaction, index, trustedInput, sizeof(trustedInput));
+	closeDongle(dongle);
 	exitDongle();
 	freeTransaction(transaction);
 	if (result < 0) {
