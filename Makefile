@@ -15,7 +15,7 @@ all: btchip_setup btchip_setup_forward btchip_setup_kiosk btchip_setup_143 btchi
 	 btchip_setTransportWinUSB btchip_setTransportHID \
 	 btchip_util_runScript btchip_util_parseRawTransaction btchip_util_compressPublicKey \
 	 btchip_util_getRegularInputScript btchip_util_getP2SHRedeemScript \
-	 btchip_util_getP2SHInputScript btchip_util_formatTransaction
+	 btchip_util_getP2SHInputScript btchip_util_formatTransaction btchip_util_formatOutput
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -o $@ -c $<
@@ -121,6 +121,9 @@ btchip_util_getP2SHInputScript: utils/btchip_util_getP2SHInputScript.o
 
 btchip_util_formatTransaction: utils/btchip_util_formatTransaction.o 
 	gcc utils/btchip_util_formatTransaction.o $(LIBS) $(OBJS) -o bin/btchip_util_formatTransaction
+
+btchip_util_formatOutput: utils/btchip_util_formatOutput.o
+	gcc utils/btchip_util_formatOutput.o $(LIBS) $(OBJS) -o bin/btchip_util_formatOutput
 
 clean:
 	rm -f *.o bin/* commands/*.o utils/*.o
