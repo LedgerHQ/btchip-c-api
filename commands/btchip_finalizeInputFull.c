@@ -61,14 +61,14 @@ int main(int argc, char **argv) {
 		int blockLength = 255;
 		int dataLength;
 		unsigned char p1;
-		if (offset + blockLength > outputDataLength) {
-			dataLength = outputDataLength - offset;
+		if (offset + blockLength < outputDataLength) {
+			dataLength = blockLength;
 			p1 = 0x00;
 		}
 		else {
-			dataLength = blockLength;
+			dataLength = outputDataLength - offset;
 			p1 = 0x80;
-		}		
+		}
 		apduSize = 0;
 		in[apduSize++] = BTCHIP_CLA;
 		in[apduSize++] = BTCHIP_INS_HASH_INPUT_FINALIZE_FULL;
