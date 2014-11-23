@@ -10,6 +10,8 @@ Building on Linux and OS X
 
 Build with GNU make (needs libusb 1.0 development APIs), each command is described below
 
+**Note** : When running on OS X, switch the dongle to WinUSB before using. The C API doesn't work yet in HID mode.
+
 Building on Windows
 --------------------
 
