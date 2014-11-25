@@ -18,6 +18,7 @@ all: btchip_setup btchip_setup_forward btchip_setup_kiosk btchip_setup_143 btchi
 	 btchip_util_getP2SHInputScript btchip_util_formatTransaction btchip_util_formatOutput
 
 %.o: %.c %.h
+	mkdir -p bin
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 btchip_setup: commands/btchip_setup.o $(OBJS_COMM)
@@ -126,5 +127,5 @@ btchip_util_formatOutput: utils/btchip_util_formatOutput.o
 	gcc utils/btchip_util_formatOutput.o $(LIBS) $(OBJS) -o bin/btchip_util_formatOutput
 
 clean:
-	rm -f *.o bin/* commands/*.o utils/*.o
+	rm -rf *.o bin commands/*.o utils/*.o
 
