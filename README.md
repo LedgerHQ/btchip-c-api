@@ -5,15 +5,17 @@ C APIs demonstrating how to use the latest BTChip firmware published on http://b
 
 Note : if you're using an older firmware version (before 1.4.7), check the derive-before-1.4.7 branch
 
+Note : Ledger Wallet only supports HIDAPI following version 1.4.14
+
 Building on Linux and OS X
 ---------------------------
 
-Build with GNU make (needs libusb 1.0 development APIs), each command is described below
-
-**Note** : When running on OS X, switch the dongle to WinUSB before using. The C API doesn't work yet in HID mode.
+Build with GNU make (needs libusb 1.0 development APIs for Makefile.libusb or HID API from Signal 11 for Makefile.hidapi), each command is described below
 
 Building on Windows
---------------------
+-------------------
+
+Those instructions are outdated and should refer to HID API instead.
 
   * Download MinGW installer mingw-get from http://sourceforge.net/projects/mingw/files/Installer/
   * Install packages with mingw-get :

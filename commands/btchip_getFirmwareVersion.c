@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "Dongle application error : %.4x\n", sw);
 		return 0;
 	}
-	printf("Firmware version %d.%d.%d\n", ((out[1] << 8) + out[2]), out[3], out[4]);
+	printf("Firmware version %s %d.%d.%d\n", (out[1] != 0 ? "Ledger" : ""), out[2], out[3], out[4]);
 	if (result > 5) {
 		printf("Loader ID %d.%d.%d\n", (out[5] & 0x0F), (out[6] >> 4), (out[6] & 0x0F));
 	}
