@@ -25,6 +25,8 @@
 #define TIMEOUT 10000
 #define SW1_DATA 0x61
 
+#ifdef HAVE_LIBUSB
+
 int initWinUSB() {
 	return libusb_init(NULL);
 }
@@ -84,3 +86,4 @@ void closeDongleWinUSB(libusb_device_handle *handle) {
 	libusb_close(handle);
 }
 
+#endif

@@ -16,20 +16,20 @@
 *   limitations under the License.
 ********************************************************************************/
 
-#ifndef __DONGLECOMM_HID_H__
+#ifndef __LEDGERLAYER_H__
 
-#define __DONGLECOMM_HID_H__
+#define __LEDGERLAYER_H__
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <libusb-1.0/libusb.h>
 
-int initHid(void);
-int exitHid(void);
-int sendApduHid(libusb_device_handle *handle, const unsigned char ledger, const unsigned char *apdu, size_t apduLength, unsigned char *out, size_t outLength, int *sw);
-libusb_device_handle* getFirstDongleHid(unsigned char *ledger);
-void closeDongleHid(libusb_device_handle *handle);
+#define DEFAULT_LEDGER_CHANNEL 0x0101
+#define LEDGER_HID_PACKET_SIZE 64
+
+int wrapCommandAPDU(unsigned int channel, const unsigned char *command, size_t commandLength, unsigned int packetSize, unsigned char *out, size_t outLength);
+int unwrapReponseAPDU(unsigned int channel, const unsigned char *data, size_t dataLength, unsigned int packetSize, unsigned char *out, size_t outLength);
 
 #endif
+
 

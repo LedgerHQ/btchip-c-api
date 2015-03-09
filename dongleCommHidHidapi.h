@@ -16,20 +16,20 @@
 *   limitations under the License.
 ********************************************************************************/
 
-#ifndef __DONGLECOMM_HID_H__
+#ifndef __DONGLECOMM_HID_HIDAPI_H__
 
-#define __DONGLECOMM_HID_H__
+#define __DONGLECOMM_HID_HIDAPI_H__
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <libusb-1.0/libusb.h>
+#include <hidapi/hidapi.h>
 
-int initHid(void);
-int exitHid(void);
-int sendApduHid(libusb_device_handle *handle, const unsigned char ledger, const unsigned char *apdu, size_t apduLength, unsigned char *out, size_t outLength, int *sw);
-libusb_device_handle* getFirstDongleHid(unsigned char *ledger);
-void closeDongleHid(libusb_device_handle *handle);
+int initHidHidapi(void);
+int exitHidHidapi(void);
+int sendApduHidHidapi(hid_device *handle, const unsigned char ledger, const unsigned char *apdu, size_t apduLength, unsigned char *out, size_t outLength, int *sw);
+hid_device* getFirstDongleHidHidapi(unsigned char *ledger);
+void closeDongleHidHidapi(hid_device *handle);
 
 #endif
 

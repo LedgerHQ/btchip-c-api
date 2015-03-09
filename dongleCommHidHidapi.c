@@ -16,7 +16,7 @@
 *   limitations under the License.
 ********************************************************************************/
 
-#include "dongleCommHid.h"
+#include "dongleCommHidHidapi.h"
 #include "ledgerLayer.h"
 
 #define BTCHIP_VID 0x2581
@@ -29,18 +29,17 @@
 #define SW1_DATA 0x61
 #define MAX_BLOCK 64
 
-#ifdef HAVE_LIBUSB
+#ifdef HAVE_HIDAPI
 
-int initHid() {
-	return libusb_init(NULL);
+int initHidHidapi() {
+	return hid_init();
 }
 
-int exitHid() {
-	libusb_exit(NULL);
-	return 0;
+int exitHidHidapi() {
+	return hid_exit();
 }
 
-int sendApduHid(libusb_device_handle *handle, const unsigned char ledger, const unsigned char *apdu, size_t apduLength, unsigned char *out, size_t outLength, int *sw) {
+int sendApduHidHidapi(hid_device *handle, const unsigned char ledger, const unsigned char *apdu, size_t apduLength, unsigned char *out, size_t outLength, int *sw) {
 	unsigned char buffer[400];
 	unsigned char paddingBuffer[MAX_BLOCK];
 	int result;
@@ -64,21 +63,20 @@ int sendApduHid(libusb_device_handle *handle, const unsigned char ledger, const 
 		int blockSize = (remaining > MAX_BLOCK ? MAX_BLOCK : remaining);
 		memset(paddingBuffer, 0, MAX_BLOCK);
 		memcpy(paddingBuffer, buffer + offset, blockSize);
-		result = libusb_interrupt_transfer(handle, 0x02, paddingBuffer, blockSize, &length, TIMEOUT);
+		result = hid_write(handle, paddingBuffer, blockSize);
 		if (result < 0) {
 			return result;
 		}		
 		offset += blockSize;
 		remaining -= blockSize;
 	}
-	result = libusb_interrupt_transfer(handle, 0x82, buffer, MAX_BLOCK, &length, TIMEOUT);
+	result = hid_read_timeout(handle, buffer, MAX_BLOCK, TIMEOUT);
 	if (result < 0) {
 		return result;
 	}	
 	offset = MAX_BLOCK;
-	if (!ledger) {	
+	if (!ledger) {		
 		if (buffer[0] == SW1_DATA) {		
-			int dummy;
 			length = buffer[1];
 			length += 2;
 			if (length > (MAX_BLOCK - 2)) {			
@@ -91,7 +89,7 @@ int sendApduHid(libusb_device_handle *handle, const unsigned char ledger, const 
 					else {
 						blockSize = remaining;
 					}
-					result = libusb_interrupt_transfer(handle, 0x82, buffer + offset, MAX_BLOCK, &dummy, TIMEOUT);
+					result = hid_read_timeout(handle, buffer + offset, MAX_BLOCK, TIMEOUT);
 					if (result < 0) {
 						return result;
 					}
@@ -113,8 +111,7 @@ int sendApduHid(libusb_device_handle *handle, const unsigned char ledger, const 
 	}
 	else {
 		for (;;) {
-			int dummy;
-			result = unwrapReponseAPDU(DEFAULT_LEDGER_CHANNEL, buffer, offset, LEDGER_HID_PACKET_SIZE, out, outLength);			
+			result = unwrapReponseAPDU(DEFAULT_LEDGER_CHANNEL, buffer, offset, LEDGER_HID_PACKET_SIZE, out, outLength);
 			if (result < 0) {
 				return result;
 			}
@@ -123,7 +120,7 @@ int sendApduHid(libusb_device_handle *handle, const unsigned char ledger, const 
 				swOffset = result - 2;
 				break;
 			}
-			result = libusb_interrupt_transfer(handle, 0x82, buffer + offset, MAX_BLOCK, &dummy, TIMEOUT);
+			result = hid_read_timeout(handle, buffer + offset, MAX_BLOCK, TIMEOUT);
 			if (result < 0) {
 				return result;
 			}
@@ -131,37 +128,35 @@ int sendApduHid(libusb_device_handle *handle, const unsigned char ledger, const 
 		}
 		if (sw != NULL) {
 			*sw = (out[swOffset] << 8) | out[swOffset + 1];
-		}				
+		}		
 	}
 	return length;
 }
 
-libusb_device_handle* getFirstDongleHid(unsigned char *ledger) {
-	libusb_device_handle *result = libusb_open_device_with_vid_pid(NULL, BTCHIP_VID, BTCHIP_HID_PID);
-	if (result == NULL) {
-		result = libusb_open_device_with_vid_pid(NULL, BTCHIP_VID, BTCHIP_HID_PID_LEDGER);		
-		*ledger = (result != NULL);
-		if (result == NULL) {		
-			result = libusb_open_device_with_vid_pid(NULL, BTCHIP_VID, BTCHIP_HID_PID_LEDGER_PROTON);
-			*ledger = (result != NULL);
-			if (result == NULL) {
-				result = libusb_open_device_with_vid_pid(NULL, BTCHIP_VID, BTCHIP_HID_BOOTLOADER_PID);
-				if (result == NULL) {		
-					return NULL;
-				}
-			}
-		}
+hid_device* getFirstDongleHidHidapi(unsigned char *ledger) {
+	hid_device *result = hid_open(BTCHIP_VID, BTCHIP_HID_PID, NULL);
+	if (result != NULL) {
+		return result;
 	}
-	libusb_detach_kernel_driver(result, 0);
-	libusb_claim_interface(result, 0);
-	return result;
+	result = hid_open(BTCHIP_VID, BTCHIP_HID_PID_LEDGER, NULL);
+	if (result != NULL) {
+		*ledger = 1;
+		return result;
+	}
+	result = hid_open(BTCHIP_VID, BTCHIP_HID_PID_LEDGER_PROTON, NULL);
+	if (result != NULL) {
+		*ledger = 1;
+		return result;
+	}
+	result = hid_open(BTCHIP_VID, BTCHIP_HID_BOOTLOADER_PID, NULL);
+	if (result != NULL) {
+		return result;
+	}
+	return NULL;
 }
 
-void closeDongleHid(libusb_device_handle *handle) {	
-	libusb_release_interface(handle, 0);
-	libusb_attach_kernel_driver(handle, 0);
-	libusb_close(handle);
+void closeDongleHidHidapi(hid_device *handle) {	
+	hid_close(handle);
 }
 
 #endif
-

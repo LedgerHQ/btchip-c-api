@@ -21,6 +21,7 @@
 #include <string.h>
 #include "dongleComm.h"
 #include "dongleCommHid.h"
+#include "dongleCommHidHidapi.h"
 #include "dongleCommWinUSB.h"
 #ifdef DEBUG_COMM
 #include "hexUtils.h"
@@ -29,16 +30,20 @@
 typedef enum {
 	TRANSPORT_NONE,
 	TRANSPORT_HID,
-	TRANSPORT_WINUSB
+	TRANSPORT_WINUSB,
+	TRANSPORT_HID_HIDAPI
 } dongleTransport;
 
 typedef struct dongleHandleInternal {
 	dongleTransport transport;
+	unsigned char ledger;
 	void* handle;
 } dongleHandleInternal;
 
 int initDongle(void) {
-	int result = initHid();
+	int result = -1;
+#ifdef HAVE_LIBUSB	
+	result = initHid();
 	if (result < 0) {
 		return result;
 	}
@@ -46,11 +51,20 @@ int initDongle(void) {
 	if (result < 0) {
 		return result;
 	}
+#endif
+#ifdef HAVE_HIDAPI
+	result = initHidHidapi();
+	if (result < 0) {
+		return result;
+	}
+#endif	
 	return result;
 }
 
 int exitDongle(void) {
-	int result = exitHid();
+	int result = -1;
+#ifdef HAVE_LIBUSB	
+	result = exitHid();
 	if (result < 0) {
 		return result;
 	}
@@ -58,24 +72,38 @@ int exitDongle(void) {
 	if (result < 0) {
 		return result;
 	}
+#endif
+#ifdef HAVE_HIDAPI
+	result = exitHidHidapi();
+	if (result < 0)	 {
+		return result;
+	}
+#endif	
 	return result;
 }
 
 int sendApduDongle(dongleHandle handle, const unsigned char *apdu, size_t apduLength, unsigned char *out, size_t outLength, int *sw) 
 {
-	int result;
+	int result = -1;
 #ifdef DEBUG_COMM
 	printf("=> ");
 	displayBinary((unsigned char*)apdu, apduLength);
 #endif		
+#ifdef HAVE_LIBUSB	
 	if (handle->transport == TRANSPORT_HID) {
-		result = sendApduHid((libusb_device_handle*)handle->handle, apdu, apduLength, out, outLength, sw);
+		result = sendApduHid((libusb_device_handle*)handle->handle, handle->ledger, apdu, apduLength, out, outLength, sw);
 	}
 	else
 	if (handle->transport == TRANSPORT_WINUSB) {
 		result = sendApduWinUSB((libusb_device_handle*)handle->handle, apdu, apduLength, out, outLength, sw);
 	}
-	else {
+#endif
+#ifdef HAVE_HIDAPI
+	if (handle->transport == TRANSPORT_HID_HIDAPI) {
+		result = sendApduHidHidapi((hid_device*)handle->handle, handle->ledger, apdu, apduLength, out, outLength, sw);
+	}
+#endif	
+	if (result < 0) {
 		return -1;
 	}
 #ifdef DEBUG_COMM
@@ -92,8 +120,10 @@ dongleHandle getFirstDongle() {
 	if (result == NULL) {
 		return result;
 	}
+	result->ledger = 0;
+#ifdef HAVE_LIBUSB		
 	result->transport = TRANSPORT_HID;
-	result->handle = getFirstDongleHid();
+	result->handle = getFirstDongleHid(&result->ledger);
 	if (result->handle != NULL) {
 		return result;
 	}
@@ -102,11 +132,20 @@ dongleHandle getFirstDongle() {
 	if (result->handle != NULL) {
 		return result;
 	}
+#endif
+#ifdef HAVE_HIDAPI
+	result->transport = TRANSPORT_HID_HIDAPI;
+	result->handle = getFirstDongleHidHidapi(&result->ledger);
+	if (result->handle != NULL) {
+		return result;
+	}
+#endif	
 	free(result);
 	return NULL;
 }
 
 void closeDongle(dongleHandle handle) {
+#ifdef HAVE_LIBUSB	
 	if (handle->transport == TRANSPORT_HID) {
 		closeDongleHid((libusb_device_handle*)handle->handle);
 	}
@@ -114,9 +153,12 @@ void closeDongle(dongleHandle handle) {
 	if (handle->transport == TRANSPORT_WINUSB) {
 		closeDongleWinUSB((libusb_device_handle*)handle->handle);
 	}
-	else {
-		return;
+#endif	
+#ifdef HAVE_HIDAPI
+	if (handle->transport == TRANSPORT_HID_HIDAPI) {
+		closeDongleHidHidapi((hid_device*)handle->handle);
 	}
+#endif	
 	handle->transport = TRANSPORT_NONE;
 	free(handle);
 }
