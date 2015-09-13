@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define DEFAULT_LEDGER_CHANNEL 0x0101
+#define DEFAULT_LEDGER_CHANNEL 0x01
 #define LEDGER_HID_PACKET_SIZE 64
 
 int wrapCommandAPDU(unsigned int channel, const unsigned char *command, size_t commandLength, unsigned int packetSize, unsigned char *out, size_t outLength);
