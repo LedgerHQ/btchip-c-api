@@ -20,12 +20,15 @@
 #include "ledgerLayer.h"
 
 #define BTCHIP_VID 0x2581
+#define LEDGER_VID 0x2C97
 #define BTCHIP_HID_PID 0x2b7c
 #define BTCHIP_HID_PID_LEDGER 0x3b7c
 #define BTCHIP_HID_PID_LEDGER_PROTON 0x4b7c
 #define BTCHIP_HID_BOOTLOADER_PID 0x1807
+#define BLUE_PID 0x0000
+#define NANOS_PID 0x0001
 
-#define TIMEOUT 10000
+#define TIMEOUT 60000
 #define SW1_DATA 0x61
 #define MAX_BLOCK 64
 
@@ -152,6 +155,16 @@ hid_device* getFirstDongleHidHidapi(unsigned char *ledger) {
 	if (result != NULL) {
 		return result;
 	}
+	result = hid_open(LEDGER_VID, BLUE_PID, NULL);
+	if (result != NULL) {
+		*ledger = 1;
+		return result;
+	}
+	result = hid_open(LEDGER_VID, NANOS_PID, NULL);
+	if (result != NULL) {
+		*ledger = 1;
+		return result;
+	}	
 	return NULL;
 }
 

@@ -38,9 +38,10 @@ int main(int argc, char **argv) {
 	unsigned char* outputData;
 	int outputDataLength;
 	int offset = 0;
+	int scriptBlockLength = 50;
 
 	if (argc < 2) {
-		fprintf(stderr, "Usage : %s [output data]\n", argv[0]);
+		fprintf(stderr, "Usage : %s [output data] [block length (default 50, use 255 for older firmwares)]\n", argv[0]);
 		return 0;
 	}
 	outputDataLength = strlen(argv[1]) / 2;
@@ -51,6 +52,14 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "Invalid output data\n");
 		return 0;		
 	}
+	if (argc > 2) {
+		scriptBlockLength = atoi(argv[2]);
+		if (scriptBlockLength < 50) {
+			free(outputData);
+			fprintf(stderr, "Invaid block length\n");
+			return 0;
+		}
+	}
 	initDongle();
 	dongle = getFirstDongle();
 	if (dongle == NULL) {
@@ -58,7 +67,7 @@ int main(int argc, char **argv) {
 		return 0;
 	}	
 	while (offset < outputDataLength) {
-		int blockLength = 255;
+		int blockLength = scriptBlockLength;
 		int dataLength;
 		unsigned char p1;
 		if (offset + blockLength < outputDataLength) {

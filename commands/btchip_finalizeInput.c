@@ -29,17 +29,6 @@
 #include "btchipTrustedInput.h"
 #include "btchipArgs.h"
 
-#define PREVOUT_SIZE 36
-
-const unsigned char DEFAULT_VERSION[] = { 0x01, 0x00, 0x00, 0x00 };
-const unsigned char DEFAULT_SEQUENCE[] = { 0xFF, 0xFF, 0xFF, 0xFF };
-
-typedef struct prevout {
-	unsigned char prevout[TRUSTED_INPUT_SIZE];
-	unsigned char isTrusted;
-	uint32_t outputIndex;
-} prevout;
-
 int main(int argc, char **argv) {
 	dongleHandle dongle;
 	unsigned char in[260];

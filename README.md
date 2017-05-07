@@ -5,12 +5,12 @@ C APIs demonstrating how to use the latest BTChip firmware published on http://b
 
 Note : if you're using an older firmware version (before 1.4.7), check the derive-before-1.4.7 branch
 
-Note : Ledger Wallet only supports HIDAPI following version 1.4.14
+Note : Ledger Wallet only supports HIDAPI following version 1.4.14 for HW.1 / Nano, as well as for all versions for Nano S or Blue  
 
 Building on Linux and OS X
 ---------------------------
 
-Build with GNU make (needs libusb 1.0 development APIs for Makefile.libusb or HID API from Signal 11 for Makefile.hidapi), each command is described below
+Build with GNU make (needs libusb 1.0 development APIs for Makefile.libusb or HID API from Signal 11 for Makefile.hidapi, such as the libhidapi-dev package), each command is described below
 
 Building on Windows
 -------------------
