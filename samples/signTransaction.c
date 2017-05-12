@@ -236,9 +236,11 @@ int main(int argc, char **argv) {
 	for (j=0; j<txInputs; j++) {
 		unsigned char in[260];
 		unsigned char out[260];
+		unsigned int lockTime;
 		int sw;
 		int apduSize;		
 		int result;
+		bitcoinInput *currentInput = rawTx->inputs;
 
 		// Initialize the signature request
 
@@ -264,8 +266,7 @@ int main(int argc, char **argv) {
 
 		// Process each input, scriptSig containing the redeem script
 
-		for (i=0; i<txInputs; i++) {
-			bitcoinInput *currentInput = rawTx->inputs;
+		for (i=0; i<txInputs; i++) {			
 			int scriptLength;
 			int scriptOffset = 0;
 			apduSize = 0;
@@ -455,8 +456,9 @@ int main(int argc, char **argv) {
 			apduSize += 4;
 		}
 		in[apduSize++] = 0x00; // no 2FA on new platform
-		memcpy(in + apduSize, rawTx->lockTime, sizeof(rawTx->lockTime));
-		apduSize += sizeof(rawTx->lockTime);
+		lockTime = readUint32LE(rawTx->lockTime);
+		writeUint32BE(in + apduSize, lockTime);
+		apduSize += 4;
 		in[apduSize++] = SIGHASH_ALL;
 		in[OFFSET_CDATA] = (apduSize - 5);
 		result = sendApduDongle(dongle, in, apduSize, out, sizeof(out), &sw);
