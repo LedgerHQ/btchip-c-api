@@ -28,7 +28,7 @@
 #define BLUE_PID 0x0000
 #define NANOS_PID 0x0001
 #define NANOSP_PID 0x5011
-#define NANOX_PID 0x0021
+#define NANOX_PID 0x4011
 
 #define TIMEOUT 60000
 #define SW1_DATA 0x61
