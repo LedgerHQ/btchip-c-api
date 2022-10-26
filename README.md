@@ -10,7 +10,10 @@ Note : Ledger Wallet only supports HIDAPI following version 1.4.14 for HW.1 / Na
 Building on Linux and OS X
 ---------------------------
 
-Build with GNU make (needs libusb 1.0 development APIs for Makefile.libusb or HID API from Signal 11 for Makefile.hidapi, such as the libhidapi-dev package), each command is described below
+Build with GNU make (needs libusb 1.0 development APIs for Makefile.libusb or HID API from Signal 11 for Makefile.hidapi, such as the libhidapi-dev package), each command is described below. It may be necessary to install the following packages:
+* sudo apt install libhidapi-dev
+* sudo apt install libusb-1.0-0-dev
+* sudo apt install libconfig-dev
 
 Building on Windows
 -------------------

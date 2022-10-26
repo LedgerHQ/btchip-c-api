@@ -22,6 +22,8 @@
 
 #include <inttypes.h>
 
+extern inline int64_t atoi64(const char* psz);
+
 int parseStringAmount(char *amount, int64_t* result);
 void writeHexAmount(int64_t amount, unsigned char *buffer);
 void writeHexAmountBE(int64_t amount, unsigned char *buffer);
