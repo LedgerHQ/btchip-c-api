@@ -27,6 +27,8 @@
 #define BTCHIP_HID_BOOTLOADER_PID 0x1807
 #define BLUE_PID 0x0000
 #define NANOS_PID 0x0001
+#define NANOSP_PID 0x5011
+#define NANOX_PID 0x0021
 
 #define TIMEOUT 60000
 #define SW1_DATA 0x61
@@ -164,7 +166,18 @@ hid_device* getFirstDongleHidHidapi(unsigned char *ledger) {
 	if (result != NULL) {
 		*ledger = 1;
 		return result;
-	}	
+	}
+	result = hid_open(LEDGER_VID, NANOSP_PID, NULL);
+		if (result != NULL) {
+			*ledger = 1;
+			return result;
+		}
+	result = hid_open(LEDGER_VID, NANOX_PID, NULL);
+				if (result != NULL) {
+					*ledger = 1;
+					return result;
+				}
+
 	return NULL;
 }
 
